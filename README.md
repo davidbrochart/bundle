@@ -1,1 +1,1 @@
-# bundle
+Bundle is a highly experimental demonstration of what it would be like to have an FPGA backend offloading NumPy computations. It uses [Dask](https://dask.pydata.org) for parallelization and scheduling. Since FPGAs have not landed yet in our laptops, the FPGA stuff is simulated. For that I have created a small Hardware Description Language called [PyClk](https://github.com/davidbrochart/pyclk).
