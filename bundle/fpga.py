@@ -1,86 +1,114 @@
 from pyclk import Sig, Reg, In, Out, List, Module
-import threading
+
+from iterator import iterator
+from crossbar import crossbar
+from functions import add
 
 class FPGA(Module):
-    def __init__(self):
+    '''
+    The FPGA top module.
+    It consists of functions which are used by iterators to perform an operation.
+    '''
+
+    def __init__(self, iter_nb, func_nb):
+        self.iter_nb = iter_nb
+        self.func_nb = func_nb
+
         self.trace = None
-        self.mutex = threading.Lock()
-        self.s_op_next_id = Sig()
-        self.s_a = List()
-        self.s_b = List()
-        self.s_c = List()
-        self.s_op = List()
-        self.s_op_done = List()
-        self.u_adder = List()
-        self.u_op_ctrl = List()
-        self.s_op_id = Sig()
-        for i in range(3):
-            self.s_a[i] = Sig()
-            self.s_b[i] = Sig()
-            self.s_c[i] = Sig()
-            self.s_op[i] = Sig()
-            self.s_op[i] = None, None
-            self.s_op_done[i] = Sig()
-            self.u_adder[i] = _ = adder()
-            _.i_a(self.s_a[i])
-            _.i_b(self.s_b[i])
-            _.o_c(self.s_c[i])
-            self.u_op_ctrl[i] = _ = op_ctrl()
-            _.i_op(self.s_op[i])
-            _.i_c(self.s_c[i])
-            _.o_a(self.s_a[i])
-            _.o_b(self.s_b[i])
-            _.o_op_done(self.s_op_done[i])
-    def op(self, op_code, args):
-        with self.mutex:
-            op_id = self.s_op_id.d
-            self.s_op[op_id] = op_code, args
-            self.s_op_id = op_id + 1
-            return op_id
-    def has_run(self, op_id):
-        with self.mutex:
-            self.run(trace=self.trace)
-            if self.s_op_done[op_id] == 1:
-                self.s_op[op_id] = None, None
-                return True
-            return False
+        self.r_op_func = List()
+        self.r_op_arg0 = List()
+        self.r_op_arg1 = List()
+        self.r_op_res  = List()
 
-class op_ctrl(Module):
-    def __init__(self):
-        self.s_op_code = Sig()
-        self.s_args = Sig()
-        self.r_cnt = Reg()
-        self.r_op_done = Reg()
-        self.i_op = In()
-        self.i_c = In()
-        self.o_a = Out()
-        self.o_b = Out()
-        self.o_op_done = Out()
+        # iterators
+        self.u_iterator = List()
+        self.s_iter_busy = List()
+        self.s_iter_func_res = List()
+        self.s_iter_func_name = List()
+        self.s_iter_func_arg0 = List()
+        self.s_iter_func_arg1 = List()
+        for i in range(iter_nb):
+            self.s_iter_busy[i] = Sig()
+            self.s_iter_func_res[i] = Sig()
+            self.s_iter_func_name[i] = Sig()
+            self.s_iter_func_arg0[i] = Sig()
+            self.s_iter_func_arg1[i] = Sig()
+            self.r_op_func[i] = Reg()
+            self.r_op_arg0[i] = Reg()
+            self.r_op_arg1[i] = Reg()
+            self.r_op_res[i] = Reg()
+
+            self.u_iterator[i] = _ = iterator()
+            _.i_iter_busy   (self.s_iter_busy[i])
+            _.i_func_res    (self.s_iter_func_res[i])
+            _.o_func_name   (self.s_iter_func_name[i])
+            _.o_func_arg0   (self.s_iter_func_arg0[i])
+            _.o_func_arg1   (self.s_iter_func_arg1[i])
+
+        # functions
+        self.u_func = List()
+        self.s_func_arg0 = List()
+        self.s_func_arg1 = List()
+        self.s_func_res = List()
+        self.s_func_name = List()
+        for i in range(func_nb):
+            self.s_func_arg0[i] = Sig()
+            self.s_func_arg1[i] = Sig()
+            self.s_func_res[i] = Sig()
+            self.s_func_name[i] = Sig()
+
+            self.u_func[i] = _ = add()
+            _.i_arg0    (self.s_func_arg0[i])
+            _.i_arg1    (self.s_func_arg1[i])
+            _.o_res     (self.s_func_res[i])
+            _.o_name    (self.s_func_name[i])
+
+        # crossbar
+        self.u_crossbar = _ = crossbar(iter_nb, func_nb)
+        for i in range(iter_nb):
+            _.i_iter_func_name[i]   (self.s_iter_func_name[i])
+            _.i_iter_func_arg0[i]   (self.s_iter_func_arg0[i])
+            _.i_iter_func_arg1[i]   (self.s_iter_func_arg1[i])
+            _.o_iter_func_res[i]    (self.s_iter_func_res[i])
+            _.o_iter_busy[i]        (self.s_iter_busy[i])
+        for i in range(func_nb):
+            _.i_func_name[i]    (self.s_func_name[i])
+            _.o_func_arg0[i]    (self.s_func_arg0[i])
+            _.o_func_arg1[i]    (self.s_func_arg1[i])
+            _.i_func_res[i]     (self.s_func_res[i])
+
     def logic(self):
-        self.s_op_code, self.s_args = self.i_op.d
-        if self.r_op_done.q == 1:
-            pass
-        elif self.s_op_code == None:
-            self.o_op_done = 0
-        elif self.s_op_code == 'add':
-            a, b, c = self.s_args.d
-            self.r_cnt = self.r_cnt.q + 1
-            self.o_a = int(a[self.r_cnt.q])
-            self.o_b = int(b[self.r_cnt.q])
-            c[self.r_cnt.q] = self.i_c.d
-            if self.r_cnt.q == len(a) - 1:
-                self.r_cnt = 0
-                self.r_op_done = 1
-            else:
-                self.r_cnt = self.r_cnt.q + 1
+        for i in range(self.iter_nb):
+            self.u_iterator[i].s_op_func.d = self.r_op_func[i].q
+            self.u_iterator[i].s_op_arg0.d = self.r_op_arg0[i].q
+            self.u_iterator[i].s_op_arg1.d = self.r_op_arg1[i].q
+            self.u_iterator[i].s_op_res.d = self.r_op_res[i].q
+
+    # software interface:
+
+    def op(self, func, args, res):
+        # operation request
+        # software is polling, run the FPGA
+        # return the iterator id, or -1 if all iterators are busy
+        self.run(trace=self.trace)
+        iter_id = -1
+        for i in range(self.iter_nb):
+            if self.r_op_func[i].q == None:
+                self.r_op_func[i].d = func
+                self.r_op_arg0[i].d = args[0]
+                self.r_op_arg1[i].d = args[1]
+                self.r_op_res[i].d = res
+                iter_id = i
+                break
+        return iter_id
+
+    def done(self, iter_id):
+        # operation completion check
+        # software is polling, run the FPGA
+        # return True if the operation is done, False otherwise
+        self.run(trace=self.trace)
+        if self.u_iterator[iter_id].s_op_done.d == 1:
+            self.r_op_func[iter_id].d = None
+            return True
         else:
-            print(f'Unknown operation code {self.s_op_code.d}')
-        self.o_op_done = self.r_op_done.q
-
-class adder(Module):
-    def __init__(self):
-        self.i_a = In()
-        self.i_b = In()
-        self.o_c = Out()
-    def logic(self):
-        self.o_c.d = self.i_a.d + self.i_b.d
+            return False
