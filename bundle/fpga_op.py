@@ -1,19 +1,33 @@
 from dask.base import tokenize
 from dask.array import Array
 import numpy as np
-import threading
+from threading import Lock
 
-mutex = threading.Lock()
+fpga = None
+mutex = Lock()
+request_cnt = -1
+requesting = -1 # -1 if no request in process, current request id otherwise
 
 def fpga_add(a, b):
+    global request_cnt, requesting, mutex, fpga
+
     c = np.empty_like(a)
+
+    with mutex:
+        request_cnt += 1
+        myself = request_cnt
 
     # request operation
     op_id = -1
     while op_id < 0:
-        # there must be only one request at a time
         with mutex:
-            op_id = fpga.op('add', (a, b), c)
+            # there must be only one request at a time
+            # and it must be granted before another request
+            if (requesting < 0) or (requesting == myself):
+                requesting = myself
+                op_id = fpga.op('add', (a, b), c)
+    with mutex:
+        requesting = -1
 
     # wait for operation to complete
     done = False
