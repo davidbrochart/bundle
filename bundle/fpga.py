@@ -2,7 +2,7 @@ from pyclk import Sig, Reg, In, Out, List, Module
 
 from .iterator import iterator
 from .crossbar import crossbar
-from .functions import add
+from .functions import func
 
 class FPGA(Module):
     '''
@@ -10,9 +10,10 @@ class FPGA(Module):
     It consists of functions which are used by iterators to perform an operation.
     '''
 
-    def __init__(self, iter_nb, func_nb):
+    def __init__(self, iter_nb, add_nb, mul_nb, cycle_nb=-1):
+        self.cycle_nb = cycle_nb
         self.iter_nb = iter_nb
-        self.func_nb = func_nb
+        func_nb = add_nb + mul_nb
 
         self.trace = None
 
@@ -58,17 +59,21 @@ class FPGA(Module):
         self.s_func_arg1 = List()
         self.s_func_res = List()
         self.s_func_name = List()
-        for i in range(func_nb):
-            self.s_func_arg0[i] = Sig()
-            self.s_func_arg1[i] = Sig()
-            self.s_func_res[i] = Sig()
-            self.s_func_name[i] = Sig()
+        i = 0
+        for fname, fnb in {'add': add_nb, 'mul': mul_nb}.items():
+            for j in range(fnb):
+                self.s_func_arg0[i] = Sig()
+                self.s_func_arg1[i] = Sig()
+                self.s_func_res[i] = Sig()
+                self.s_func_name[i] = Sig()
 
-            self.u_func[i] = _ = add()
-            _.i_arg0    (self.s_func_arg0[i])
-            _.i_arg1    (self.s_func_arg1[i])
-            _.o_res     (self.s_func_res[i])
-            _.o_name    (self.s_func_name[i])
+                self.u_func[i] = _ = func(fname)
+                _.i_arg0    (self.s_func_arg0[i])
+                _.i_arg1    (self.s_func_arg1[i])
+                _.o_res     (self.s_func_res[i])
+                _.o_name    (self.s_func_name[i])
+
+                i += 1
 
         # crossbar
         self.u_crossbar = _ = crossbar(iter_nb, func_nb)
@@ -99,6 +104,8 @@ class FPGA(Module):
         # software is polling, run the FPGA
         # return the iterator id, or -1 if all iterators are busy
         self.run(trace=self.trace)
+        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+            return -2
         iter_id = -1
         i = self.r_iter_i.q
         if self.s_op_func[i].d == None:
@@ -115,6 +122,8 @@ class FPGA(Module):
         # software is polling, run the FPGA
         # return True if the operation is done, False otherwise
         self.run(trace=self.trace)
+        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+            return True
         if self.u_iterator[iter_id].o_op_done.d == 1:
             self.s_op_func[iter_id].d = None
             return True

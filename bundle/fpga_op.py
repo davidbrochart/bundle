@@ -8,41 +8,44 @@ mutex = Lock()
 request_cnt = -1
 requesting = -1 # -1 if no request in process, current request id otherwise
 
-def fpga_add(a, b):
-    global request_cnt, requesting, mutex, fpga
+def fpga_func(fname):
+    def _(a, b):
+        global request_cnt, requesting, mutex, fpga
 
-    c = np.empty_like(a)
+        c = np.empty_like(a)
 
-    with mutex:
-        request_cnt += 1
-        myself = request_cnt
-
-    # request operation
-    op_id = -1
-    while op_id < 0:
         with mutex:
-            # there must be only one request at a time
-            # and it must be granted before another request
-            if (requesting < 0) or (requesting == myself):
-                requesting = myself
-                op_id = fpga.op('add', (a, b), c)
-    with mutex:
-        requesting = -1
+            request_cnt += 1
+            myself = request_cnt
 
-    # wait for operation to complete
-    done = False
-    while not done:
+        # request operation
+        op_id = -1
+        while op_id == -1:
+            with mutex:
+                # there must be only one request at a time
+                # and it must be granted before another request
+                if (requesting < 0) or (requesting == myself):
+                    requesting = myself
+                    op_id = fpga.op(fname, (a, b), c)
         with mutex:
-            done = fpga.done(op_id)
+            requesting = -1
 
-    return c
+        if op_id >= 0:
+            # wait for operation to complete
+            done = False
+            while not done:
+                with mutex:
+                    done = fpga.done(op_id)
 
-def add(a, b):
+        return c
+    return _
+
+def func(fname, a, b):
     chunks = a.chunks
 
-    name = 'add-' + tokenize(a) + tokenize(b) # unique identifier
+    name = fname + '-' + tokenize(a) + tokenize(b) # unique identifier
 
-    dsk = {(name, i): (fpga_add, (a.name, i), (b.name, i)) for i in range(len(a.chunks[0]))}
+    dsk = {(name, i): (fpga_func(fname), (a.name, i), (b.name, i)) for i in range(len(a.chunks[0]))}
 
     dsk.update(a.dask)  # include dask graph of the input
     dsk.update(b.dask)  # include dask graph of the input
