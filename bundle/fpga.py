@@ -1,8 +1,8 @@
 from pyclk import Sig, Reg, In, Out, List, Module
 
-from iterator import iterator
-from crossbar import crossbar
-from functions import add
+from .iterator import iterator
+from .crossbar import crossbar
+from .functions import add
 
 class FPGA(Module):
     '''
