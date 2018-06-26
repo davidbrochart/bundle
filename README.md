@@ -1,1 +1,5 @@
-Bundle is a highly experimental demonstration of what it would be like to have an FPGA backend offloading NumPy computations. It uses [Dask](https://dask.pydata.org) for parallelization and scheduling. Since FPGAs have not landed yet in our laptops, the FPGA stuff is simulated. For that I have created a small Hardware Description Language called [PyClk](https://github.com/davidbrochart/pyclk).
+Bundle is a hardware architecture designed to accelerate array computing.
+
+Right now, the goal is to map this hardware to the [PYNQ-Z1](http://www.pynq.io) board. On the software side, it uses [Dask](https://dask.pydata.org) to parallelize and schedule NumPy computations.
+
+The whole system can be simulated entirely in Python. For that I have created a small Hardware Description Language called [PyClk](https://github.com/davidbrochart/pyclk).
