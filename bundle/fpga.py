@@ -3,6 +3,7 @@ from pyclk import Sig, Reg, In, Out, List, Module
 from .iterator import iterator
 from .crossbar import crossbar
 from .functions import func
+from .fpga_op import set_fpga
 
 class FPGA(Module):
     '''
@@ -11,6 +12,7 @@ class FPGA(Module):
     '''
 
     def __init__(self, iter_nb, add_nb, mul_nb, cycle_nb=-1):
+        set_fpga(self)
         self.cycle_nb = cycle_nb
         self.iter_nb = iter_nb
         func_nb = add_nb + mul_nb
@@ -96,6 +98,9 @@ class FPGA(Module):
             self.u_iterator[i].s_op_arg0.d = self.s_op_arg0[i].d
             self.u_iterator[i].s_op_arg1.d = self.s_op_arg1[i].d
             self.u_iterator[i].s_op_res.d = self.s_op_res[i].d
+
+    def set_trace(self, trace):
+        self.trace = trace
 
     # software interface:
 
