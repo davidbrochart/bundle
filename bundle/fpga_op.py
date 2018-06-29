@@ -1,3 +1,4 @@
+import dask
 from dask.base import tokenize
 from dask.array import Array
 import numpy as np

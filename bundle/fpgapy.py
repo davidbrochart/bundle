@@ -1,7 +1,11 @@
 import dask.array as da
 from .fpga_op import func
 
-chunks = 111
+chunks = None
+
+def set_chunks(c):
+    global chunks
+    chunks = c
 
 class ndarray:
     def __init__(self, array):
