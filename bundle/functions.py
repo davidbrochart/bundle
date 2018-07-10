@@ -5,9 +5,9 @@ class func(Module):
         self.fname = fname
         self.i_arg0 = In()
         self.i_arg1 = In()
+        self.i_arg_valid = In()
         self.o_res = Out()
-        self.o_name = _ = Out()
-        _.d = fname
+        self.o_res_valid = Out()
 
     def logic(self):
         if (self.i_arg0.d is None) or (self.i_arg1.d is None):
@@ -16,3 +16,5 @@ class func(Module):
             self.o_res.d = self.i_arg0.d + self.i_arg1.d
         elif self.fname == 'mul':
             self.o_res.d = self.i_arg0.d * self.i_arg1.d
+        # purely combinatorial for now
+        self.o_res_valid.d = self.i_arg_valid.d

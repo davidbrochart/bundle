@@ -3,41 +3,60 @@ from pyclk import Sig, Reg, In, Out, List, Module
 class iterator(Module):
 
     def __init__(self):
-        self.r_idx = _ = Reg() # array index
+        self.r_state = _ = Reg()
+        _.d = 'idle'
+        self.r_data_nb = _ = Reg()
+        _.d = 0
+        self.r_raddr = _ = Reg()
+        _.d = 0
+        self.r_waddr = _ = Reg()
+        _.d = 0
+        self.r_done = _ = Reg()
+        _.d = 0
+        self.r_arg_valid = Reg()
         _.d = 0
 
-        # software interface
-        self.s_op_func = Sig()
-        self.s_op_arg0 = Sig()
-        self.s_op_arg1 = Sig()
-        self.s_op_res = Sig()
-        self.r_op_done = _ = Reg()
-        _.d = 0
-
-        # to/from crossbar
-        self.i_iter_busy = In()
-        self.i_func_res = In()
-        self.o_func_name = Out()
-        self.o_func_arg0 = Out()
-        self.o_func_arg1 = Out()
-        self.o_op_done = Out() # 1 when the operation is done, 0 otherwise
+        # I/O
+        self.i_data_nb      = In()
+        self.i_ack          = In()
+        self.o_done         = Out()
+        self.o_raddr        = Out()
+        self.o_waddr        = Out()
+        self.o_wena         = Out()
+        self.o_arg_valid    = Out()
+        self.i_res_valid    = In()
 
     def logic(self):
-        self.o_func_name.d = self.s_op_func.d
-        self.o_op_done.d = self.r_op_done.q
-        if self.s_op_func.d == None:
-            self.r_op_done.d = 0
-        else:
-            # request function
-            if (self.i_iter_busy.d == 1) and (self.r_op_done.q == 0):
-                # got a function, show arguments
-                self.o_func_arg0.d = self.s_op_arg0.d[self.r_idx.q]
-                self.o_func_arg1.d = self.s_op_arg1.d[self.r_idx.q]
-                # get result from the function
-                self.s_op_res.d[self.r_idx.q] = self.i_func_res.d
-                if self.r_idx.q == len(self.s_op_arg0.d) - 1:
-                    # done processing the array
-                    self.r_idx.d = 0
-                    self.r_op_done.d = 1
-                else:
-                    self.r_idx.d = self.r_idx.q + 1
+        if self.r_state.q == 'idle':
+            self.r_raddr.d = 0
+            self.r_waddr.d = 0
+            self.r_done.d = 0
+            self.r_arg_valid.d = 0
+            if self.i_data_nb.d != 0:
+                self.r_state.d = 'iterating'
+                self.r_data_nb.d = self.i_data_nb.d
+        elif self.r_state.q == 'iterating':
+            self.r_arg_valid.d = 1
+            if self.r_raddr.q == self.r_data_nb.q - 1:
+                self.r_state.d = 'finishing'
+        elif self.r_state.q == 'finishing':
+            self.r_arg_valid.d = 0
+            if self.r_waddr.q == self.r_data_nb.q - 1:
+                self.r_state.d == 'complete'
+                self.r_done.d = 1
+        elif self.r_state.q == 'complete':
+            if self.i_ack == 1:
+                self.r_state.d = 'idle'
+
+        if self.r_state.q == 'iterating':
+            self.r_raddr.d = self.r_raddr.q + 1
+        if (self.r_state.q == 'iterating') or (self.r_state.q == 'finishing'):
+            if self.i_res_valid.d == 1:
+                self.r_waddr.d = self.r_waddr.q + 1
+
+        self.o_done.d = self.r_done.q
+        self.o_raddr.d = self.r_raddr.q
+        self.o_waddr.d = self.r_waddr.q
+        if self.i_res_valid.d is not None:
+            self.o_wena.d = self.i_res_valid.d & ((self.r_state.q == 'iterating') or (self.r_state.q == 'finishing'))
+        self.o_arg_valid.d = self.r_arg_valid.q

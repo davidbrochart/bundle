@@ -2,81 +2,82 @@ from pyclk import Sig, Reg, In, Out, List, Module
 
 class crossbar(Module):
     '''
-    The crossbar connects iterators to functions.
+    The crossbar connects iterators to memories and functions.
     '''
 
-    def __init__(self, iter_nb, func_nb):
+    def __init__(self, mem_nb, iter_nb, func_nb):
+        self.mem_nb = mem_nb
         self.iter_nb = iter_nb
         self.func_nb = func_nb
 
-        self.r_iter_i = _ = Reg()
-        _.d = 0
-        self.r_func_i = _ = Reg()
-        _.d = 0
-
-        # iterators
-        self.i_iter_func_name = List()
-        self.i_iter_func_arg0 = List()
-        self.i_iter_func_arg1 = List()
-        self.i_iter_done = List()
-        self.o_iter_busy = List()
-        self.o_iter_func_res = List()
-        self.r_iter_busy = List()
-        self.r_iter_func_i = List()
-        self.r_iter_func_name = List()
+        self.i_iter_rmem0_i   = List()
+        self.i_iter_rmem1_i   = List()
+        self.i_iter_wmem_i    = List()
+        self.i_iter_func_i    = List()
+        self.i_iter_raddr     = List()
+        self.i_iter_waddr     = List()
+        self.i_iter_wena      = List()
+        self.i_iter_arg_valid = List()
+        self.o_iter_res_valid = List()
+        self.o_func_arg0      = List()
+        self.o_func_arg1      = List()
+        self.o_func_arg_valid = List()
+        self.i_func_res       = List()
+        self.i_func_res_valid = List()
+        self.o_mem_wena       = List()
+        self.o_mem_addr       = List()
+        self.o_mem_din        = List()
+        self.i_mem_dout       = List()
         for i in range(iter_nb):
-            self.i_iter_func_name[i] = In()
-            self.i_iter_func_arg0[i] = In()
-            self.i_iter_func_arg1[i] = In()
-            self.i_iter_done[i] = In()
-            self.o_iter_busy[i] = Out()
-            self.o_iter_func_res[i] = Out()
-            self.r_iter_busy[i] = _ = Reg()
-            _.d = 0
-            self.r_iter_func_i[i] = _ = Reg()
-            _.d = 0
-            self.r_iter_func_name[i] = Reg()
-        # functions
-        self.i_func_name = List()
-        self.o_func_arg0 = List()
-        self.o_func_arg1 = List()
-        self.i_func_res = List()
-        self.r_func_busy = List()
+            self.i_iter_rmem0_i[i]   = In()
+            self.i_iter_rmem1_i[i]   = In()
+            self.i_iter_wmem_i[i]    = In()
+            self.i_iter_func_i[i]    = In()
+
+            self.i_iter_raddr[i]     = In()
+            self.i_iter_waddr[i]     = In()
+            self.i_iter_wena[i]      = In()
+            self.i_iter_arg_valid[i] = In()
+            self.o_iter_res_valid[i] = Out()
         for i in range(func_nb):
-            self.i_func_res[i] = In()
-            self.i_func_name[i] = In()
-            self.o_func_arg0[i] = Out()
-            self.o_func_arg1[i] = Out()
-            self.r_func_busy[i] = _ = Reg()
-            _.d = 0
+            self.o_func_arg0[i]      = Out()
+            self.o_func_arg1[i]      = Out()
+            self.o_func_arg_valid[i] = Out()
+            self.i_func_res_valid[i] = In()
+            self.i_func_res[i]       = In()
+        for i in range(mem_nb):
+            self.o_mem_wena[i]       = Out()
+            self.o_mem_addr[i]       = Out()
+            self.o_mem_din[i]        = Out()
+            self.i_mem_dout[i]       = In()
 
     def logic(self):
+        # purely combinatorial, prevent latches
         for i in range(self.iter_nb):
-            self.o_iter_busy[i].d = self.r_iter_busy[i].q & self.r_iter_busy[i].d
+            self.o_iter_res_valid[i].d = 0
+        for i in range(self.func_nb):
+            self.o_func_arg0[i].d = 0
+            self.o_func_arg1[i].d = 0
+            self.o_func_arg_valid[i].d = 0
+        for i in range(self.mem_nb):
+            self.o_mem_wena[i].d = 0
+            self.o_mem_addr[i].d = 0
+            self.o_mem_din[i].d = 0
+
         for i in range(self.iter_nb):
-            if (self.i_iter_func_name[i].d == None) and (self.r_iter_busy[i].q == 1):
-                # operation completed and result retrieved, disconnect iterator and function
-                j = self.r_iter_func_i[i].q
-                self.r_func_busy[j].d = 0
-                self.r_iter_busy[i].d = 0
-        i = self.r_iter_i.q
-        if (self.i_iter_func_name[i].d != None) and (self.i_iter_done[i].d == 0) and (self.r_iter_busy[i].q == 0):
-            # iterator is idle and asking for a function, find one which is free to use
-            j = self.r_func_i.q
-            if (self.i_func_name[j].d == self.i_iter_func_name[i].d) and (self.r_func_busy[j].q == 0):
-                # found one
-                self.r_iter_busy[i].d = 1
-                self.r_func_busy[j].d = 1
-                self.r_iter_func_i[i].d = j
-            # found a function or not, look at another one
-            self.r_func_i.d = (j + 1) % self.func_nb
-        else:
-            # iterator is not looking for a function, take care of others
-            self.r_iter_i.d = (i + 1) % self.iter_nb
-        for i in range(self.iter_nb):
-            if self.r_iter_busy[i].q:
-                # connect iterator to function
-                j = self.r_iter_func_i[i].q
-                self.o_func_arg0[j].d = self.i_iter_func_arg0[i].d
-                self.o_func_arg1[j].d = self.i_iter_func_arg1[i].d
-                self.o_iter_func_res[i].d = self.i_func_res[j].d
+            if self.i_iter_rmem0_i[i].d != -1:
+                self.o_mem_addr[self.i_iter_rmem0_i[i].d].d = self.i_iter_raddr[i].d
+            if self.i_iter_rmem1_i[i].d != -1:
+                self.o_mem_addr[self.i_iter_rmem1_i[i].d].d = self.i_iter_raddr[i].d
+            if self.i_iter_wmem_i[i].d != -1:
+                self.o_mem_addr[self.i_iter_wmem_i[i].d].d = self.i_iter_waddr[i].d
+                self.o_mem_wena[self.i_iter_wmem_i[i].d].d = self.i_iter_wena[i].d
+            if self.i_iter_func_i[i].d != -1:
+                self.o_iter_res_valid[i].d = self.i_func_res_valid[self.i_iter_func_i[i].d].d
+                self.o_func_arg_valid[self.i_iter_func_i[i].d].d = self.i_iter_arg_valid[i].d
+                if self.i_iter_rmem0_i[i].d != -1:
+                    self.o_func_arg0[self.i_iter_func_i[i].d].d = self.i_mem_dout[self.i_iter_rmem0_i[i].d].d
+                if self.i_iter_rmem1_i[i].d != -1:
+                    self.o_func_arg1[self.i_iter_func_i[i].d].d = self.i_mem_dout[self.i_iter_rmem1_i[i].d].d
+                if self.i_iter_wmem_i[i].d != -1:
+                    self.o_mem_din[self.i_iter_wmem_i[i].d].d = self.i_func_res[self.i_iter_func_i[i].d].d
