@@ -41,7 +41,6 @@ certain features may not be supported.
 #from __future__ import division
 #from __future__ import absolute_import
 
-import asyncio
 import sys
 import ctypes
 from .async_func import *
@@ -50,8 +49,7 @@ from .fpga import FPGA
 fpga = FPGA(iter_nb=4, mem_nb=8, mem_depth=256, add_nb=2, mul_nb=2)
 set_fpga(fpga)
 
-event_loop = asyncio.get_event_loop()
-set_event_loop(event_loop)
+#set_event_loop()
 
 from math import sqrt
 import operator
@@ -380,9 +378,7 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None):
 
 def add(a0, a1):
     res = empty_like(a0)
-    async def main():
-        await async_add(a0, a1, res)
-    event_loop.run_until_complete(main())
+    async_add(a0, a1, res)
     return res
 
 def subtract(ndarray_vec1, ndarray_vec2):

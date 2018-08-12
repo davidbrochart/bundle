@@ -1,29 +1,38 @@
 import asyncio
 
 fpga = None
-state = None
 def set_fpga_(f):
-    global fpga, state
+    global fpga
     fpga = f
-    state = {
-            ''
-            }
 
-def set_add(a0, a1):
-    op = {'iter_i': 0, 'func_i': 0, 'rmem0_i': 0, 'rmem1_i': 1, 'wmem_i': 2, 'data_nb': a0.size}
-    mem0 = fpga.u_mem[op['rmem0_i']].ram
-    mem1 = fpga.u_mem[op['rmem1_i']].ram
-    for i in range(op['data_nb']):
-        mem0[i] = a0[i]
-        mem1[i] = a1[i]
-    fpga.op(**op)
-    return op
-    
-async def get_add(op, res):
-    iter_i = op['iter_i']
+async def ddr2fpga(a_ptr, nbytes, mem_i):
+    for i in range(nbytes // 8):
+        fpga.u_mem[mem_i].ram[i] = a_ptr[i]
+    await asyncio.sleep(0.1)
+
+@asyncio.coroutine
+def add(t0, t1, nbytes, mem_i0, mem_i1, mem_i2, r_ptr, fpga_state):
+    yield from t0
+    yield from t1
+    print('Arguments transferred')
+    while fpga_state.free_add_nb < 1:
+        yield
+    add_i = fpga_state.add_alloc()
+    while fpga_state.free_iter_nb < 1:
+        yield
+    iter_i = fpga_state.iter_alloc()
+    fpga.op(iter_i, add_i, mem_i0, mem_i1, mem_i2, nbytes // 8)
+    #for i in range(nbytes // 8):
+    #    fpga.u_mem[mem_i2].ram[i] = fpga.u_mem[mem_i0].ram[i] + fpga.u_mem[mem_i1].ram[i]
     while not fpga.done(iter_i):
-        await asyncio.sleep(0)
-    mem = fpga.u_mem[op['wmem_i']].ram
-    for i in range(op['data_nb']):
-        res[i] = mem[i]
-    return res
+        yield
+    print('Add done')
+    # free argument memories
+    fpga_state.mem_free(mem_i0)
+    fpga_state.mem_free(mem_i1)
+    for i in range(nbytes // 8):
+        r_ptr[i] = fpga.u_mem[mem_i2].ram[i]
+    yield
+    print('Result transferred')
+    fpga_state.mem_free(mem_i2)
+    fpga_state.add_free(add_i)

@@ -4,16 +4,29 @@ from .memory import memory
 from .iterator import iterator
 from .crossbar import crossbar
 from .functions import func
-from .fpga_op import set_fpga
+#from .fpga_op import set_fpga
 
 class FPGA(Module):
     '''
-    The FPGA top module.
-    It consists of functions which are used by iterators to perform an operation.
+    The FPGA top module.  It consists of:
+    - memories, where the data is stored.
+    - iterators, which stream data from/to memories.
+    - functions, which operate on streamed data.
+    For each function type (e.g. adder, multiplier, etc.), there are several
+    function instances, e.g. 8 adders. There must not be more e.g. adders than
+    iterators, because it would be useless: there would not be enough iterators
+    to feed all the adders.  There must not be less memories than e.g. 3x iterators
+    for an adder (since an adder require 3 memorie), but there can be more if we want to mask data
+    transfers with computations. Twice more memories than 3x iterators allows
+    having the next data ready for each iterator.
+    A typical setup would be e.g.:
+    - 8 adders, 8 multiplyers, 4 dividers, 8 squarers
+    - 8 iterators
+    - 24 memories
     '''
 
     def __init__(self, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
-        set_fpga(self)
+        #set_fpga(self)
         self.cycle_nb = -1
         func_nb = add_nb + mul_nb
         self.config = {
@@ -83,8 +96,11 @@ class FPGA(Module):
         self.s_func_arg_valid = List()
         self.s_func_res = List()
         self.s_func_res_valid = List()
+        func_layout = {'add': add_nb, 'mul': mul_nb}
         i = 0
-        for fname, fnb in {'add': add_nb, 'mul': mul_nb}.items():
+        for fname, fnb in func_layout.items():
+            self.config[f'{fname}_i0'] = i
+            self.config[f'{fname}_i1'] = i + fnb
             for j in range(fnb):
                 self.s_func_arg0[i] = Sig()
                 self.s_func_arg1[i] = Sig()
