@@ -376,9 +376,10 @@ def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None):
     else:
         return a
 
-def add(a0, a1):
-    res = empty_like(a0)
-    async_add(a0, a1, res)
+def add(a0, a1, res=None):
+    if res is None:
+        res = empty_like(a0)
+    async_binary_func('add', a0, a1, res)
     return res
 
 def subtract(ndarray_vec1, ndarray_vec2):
@@ -388,12 +389,11 @@ def subtract(ndarray_vec1, ndarray_vec2):
     cRay = array(c)
     return cRay
 
-def multiply(ndarray_vec1, ndarray_vec2):
-    c = []
-    for a, b in zip(ndarray_vec1, ndarray_vec2):
-        c.append(a*b)
-    cRay = array(c)
-    return cRay
+def mul(a0, a1, res=None):
+    if res is None:
+        res = empty_like(a0)
+    async_binary_func('mul', a0, a1, res)
+    return res
 
 def divide(ndarray_vec1, integer):
     c = []
@@ -1143,6 +1143,12 @@ class ndarray(object):
 
     def __radd__(self, a):
         return add(a, self)
+
+    def __mul__(self, a):
+        return mul(self, a)
+
+    def __rmul__(self, a):
+        return mul(a, self)
 
 class nditer:
     def __init__(self, array):

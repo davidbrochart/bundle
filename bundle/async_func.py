@@ -15,16 +15,16 @@ class FPGA_state(object):
     def __init__(self, fpga):
         self.mem_nb = fpga.config['mem_nb']
         self.iter_nb = fpga.config['iter_nb']
-        self.func_nb = fpga.config['func_nb']
-        self.add_nb = fpga.config['add_nb']
-        self.add_i0 = fpga.config['add_i0']
-        self.add_i1 = fpga.config['add_i1']
+        self.allfunc_nb = fpga.config['func_nb']
+        self.func_nb = {func: fpga.config[f'{func}_nb'] for func in ['add', 'mul']}
+        self.func_i0 = {func: fpga.config[f'{func}_i0'] for func in ['add', 'mul']}
+        self.func_i1 = {func: fpga.config[f'{func}_i1'] for func in ['add', 'mul']}
         self.free_mem_nb = self.mem_nb
         self.free_iter_nb = self.iter_nb
-        self.free_add_nb = self.add_nb
+        self.free_func_nb = {func: self.func_nb[func] for func in ['add', 'mul']}
         self.mem_busy = [False for i in range(self.mem_nb)]
         self.iter_busy = [False for i in range(self.iter_nb)]
-        self.func_busy = [False for i in range(self.func_nb)]
+        self.func_busy = [False for i in range(self.allfunc_nb)]
     def alloc(self, busy, nb, i0=0, i1=None):
         res = []
         if i1 is None:
@@ -46,14 +46,14 @@ class FPGA_state(object):
     def iter_alloc(self, nb=1):
         self.free_iter_nb -= nb
         return self.alloc(self.iter_busy, nb)
-    def add_alloc(self, nb=1):
-        self.free_add_nb -= nb
-        return self.alloc(self.func_busy, nb, i0=self.add_i0, i1=self.add_i1)
+    def func_alloc(self, func, nb=1):
+        self.free_func_nb[func] -= nb
+        return self.alloc(self.func_busy, nb, i0=self.func_i0[func], i1=self.func_i1[func])
     def mem_free(self, i):
         self.free_mem_nb += 1
         self.mem_busy[i] = False
-    def add_free(self, i):
-        self.free_add_nb += 1
+    def func_free(self, func, i):
+        self.free_func_nb[func] += 1
         self.func_busy[i] = False
     def iter_free(self, i):
         self.free_iter_nb += 1
@@ -64,10 +64,7 @@ class FPGA_state(object):
 #    global event_loop
 #    event_loop = loop
 
-def async_add(a0, a1, res):
-    print(f'free_mem_nb = {fpga_state.free_mem_nb}')
-    print(f'free_add_nb = {fpga_state.free_add_nb}')
-    print(f'free_iter_nb = {fpga_state.free_iter_nb}')
+def async_binary_func(func, a0, a1, res):
     #mem_nb = math.ceil(a0.nbytes / fpga.mem_bytes)
     mem_bytes = fpga.config['mem_depth'] * 8 # width 64 bits
     idx = 0
@@ -94,7 +91,7 @@ def async_add(a0, a1, res):
                 # tasks
                 t0 = asyncio.ensure_future(ddr2fpga(a0_ptr, nbytes, mem_i0))
                 t1 = asyncio.ensure_future(ddr2fpga(a1_ptr, nbytes, mem_i1))
-                t2 = add(t0, t1, nbytes, mem_i0, mem_i1, mem_i2, res_ptr, fpga_state)
+                t2 = binary_func(func, t0, t1, nbytes, mem_i0, mem_i1, mem_i2, res_ptr, fpga_state)
                 tasks.append(t2)
                 byte_nb -= nbytes
                 idx += nbytes // 8
