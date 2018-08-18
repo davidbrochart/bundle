@@ -28,10 +28,6 @@ class iterator(Module):
 
     def logic(self):
         if self.r_state.q == 'idle':
-            self.r_raddr.d = 0
-            self.r_waddr.d = 0
-            self.r_done.d = 0
-            self.r_arg_valid.d = 0
             if self.i_data_nb.d != 0:
                 self.r_state.d = 'iterating'
                 self.r_data_nb.d = self.i_data_nb.d
@@ -41,18 +37,24 @@ class iterator(Module):
                 self.r_state.d = 'finishing'
         elif self.r_state.q == 'finishing':
             self.r_arg_valid.d = 0
-            if self.r_waddr.q == self.r_data_nb.q - 1:
-                self.r_state.d == 'complete'
+            if (self.r_waddr.q == self.r_data_nb.q - 1) and (self.i_res_valid.d == 1):
+                self.r_state.d = 'complete'
                 self.r_done.d = 1
         elif self.r_state.q == 'complete':
-            if self.i_ack == 1:
+            if self.i_ack.d == 1:
                 self.r_state.d = 'idle'
+                self.r_done.d = 0
+                self.r_raddr.d = 0
+                self.r_waddr.d = 0
+                self.r_arg_valid.d = 0
 
         if self.r_state.q == 'iterating':
-            self.r_raddr.d = self.r_raddr.q + 1
+            if self.r_raddr.q != self.r_data_nb.q - 1:
+                self.r_raddr.d = self.r_raddr.q + 1
         if (self.r_state.q == 'iterating') or (self.r_state.q == 'finishing'):
             if self.i_res_valid.d == 1:
-                self.r_waddr.d = self.r_waddr.q + 1
+                if self.r_waddr.q != self.r_data_nb.q - 1:
+                    self.r_waddr.d = self.r_waddr.q + 1
 
         self.o_done.d = self.r_done.q
         self.o_raddr.d = self.r_raddr.q

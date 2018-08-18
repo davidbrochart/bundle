@@ -15,6 +15,7 @@ class FPGA_state(object):
     def __init__(self, fpga):
         self.mem_nb = fpga.config['mem_nb']
         self.iter_nb = fpga.config['iter_nb']
+        self.func_nb = fpga.config['func_nb']
         self.add_nb = fpga.config['add_nb']
         self.add_i0 = fpga.config['add_i0']
         self.add_i1 = fpga.config['add_i1']
@@ -23,7 +24,7 @@ class FPGA_state(object):
         self.free_add_nb = self.add_nb
         self.mem_busy = [False for i in range(self.mem_nb)]
         self.iter_busy = [False for i in range(self.iter_nb)]
-        self.add_busy = [False for i in range(self.add_nb)]
+        self.func_busy = [False for i in range(self.func_nb)]
     def alloc(self, busy, nb, i0=0, i1=None):
         res = []
         if i1 is None:
@@ -47,13 +48,16 @@ class FPGA_state(object):
         return self.alloc(self.iter_busy, nb)
     def add_alloc(self, nb=1):
         self.free_add_nb -= nb
-        return self.alloc(self.add_busy, nb, i0=self.add_i0, i1=self.add_i1)
+        return self.alloc(self.func_busy, nb, i0=self.add_i0, i1=self.add_i1)
     def mem_free(self, i):
         self.free_mem_nb += 1
         self.mem_busy[i] = False
     def add_free(self, i):
         self.free_add_nb += 1
-        self.add_busy[i] = False
+        self.func_busy[i] = False
+    def iter_free(self, i):
+        self.free_iter_nb += 1
+        self.iter_busy[i] = False
 
 #event_loop = None
 #def set_event_loop():
@@ -61,16 +65,20 @@ class FPGA_state(object):
 #    event_loop = loop
 
 def async_add(a0, a1, res):
+    print(f'free_mem_nb = {fpga_state.free_mem_nb}')
+    print(f'free_add_nb = {fpga_state.free_add_nb}')
+    print(f'free_iter_nb = {fpga_state.free_iter_nb}')
     #mem_nb = math.ceil(a0.nbytes / fpga.mem_bytes)
     mem_bytes = fpga.config['mem_depth'] * 8 # width 64 bits
     idx = 0
     byte_nb = a0.nbytes # remaining bytes to send
-    tasks= []
+    tasks = []
     all_done = False
     while not all_done:
         # this loop is done when all operations have been scheduled
         done = False
         while not done:
+            print(f'byte_nb = {byte_nb}')
             # this loop is done when there are not enough ressources
             # left for a new operation to be scheduled, or when all
             # operations have been scheduled
@@ -89,6 +97,7 @@ def async_add(a0, a1, res):
                 t2 = add(t0, t1, nbytes, mem_i0, mem_i1, mem_i2, res_ptr, fpga_state)
                 tasks.append(t2)
                 byte_nb -= nbytes
+                idx += nbytes // 8
                 if byte_nb == 0:
                     # all operations have been scheduled
                     done = True
@@ -105,4 +114,4 @@ def async_add(a0, a1, res):
             when = asyncio.ALL_COMPLETED
             all_done = True
         finished, unfinished = event_loop.run_until_complete(asyncio.wait(tasks, return_when=when))
-        tasks = unfinished
+        tasks = list(unfinished)

@@ -174,12 +174,12 @@ class FPGA(Module):
         self.s_iter_rmem1_i[iter_i].d = rmem1_i
         self.s_iter_wmem_i[iter_i].d = wmem_i
         self.s_iter_ack[iter_i].d = 0
+        self.run(trace=self.trace)
 
     def done(self, iter_i):
         # operation completion check
         # software is polling, run the FPGA
         # return True if the operation is done, False otherwise
-        self.run(trace=self.trace)
         if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
             return True
         if self.s_iter_done[iter_i].d == 1:
@@ -189,6 +189,8 @@ class FPGA(Module):
             self.s_iter_rmem1_i[iter_i].d = -1
             self.s_iter_wmem_i[iter_i].d = -1
             self.s_iter_ack[iter_i].d = 1
-            return True
+            done = True
         else:
-            return False
+            done = False
+        self.run(trace=self.trace)
+        return done

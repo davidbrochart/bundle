@@ -36,3 +36,4 @@ def add(t0, t1, nbytes, mem_i0, mem_i1, mem_i2, r_ptr, fpga_state):
     print('Result transferred')
     fpga_state.mem_free(mem_i2)
     fpga_state.add_free(add_i)
+    fpga_state.iter_free(iter_i)
