@@ -1,6 +1,8 @@
 from pyclk import Sig, Reg, In, Out, List, Module
+from random import randint
 
 from .memory import memory
+from .controller import controller
 from .iterator import iterator
 from .crossbar import crossbar
 from .functions import func
@@ -28,6 +30,7 @@ class FPGA(Module):
     def __init__(self, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
         #set_fpga(self)
         self.cycle_nb = -1
+        self.randmax = 2
         func_nb = add_nb + mul_nb
         self.config = {
                 'iter_nb': iter_nb,
@@ -57,6 +60,38 @@ class FPGA(Module):
             _.i_addr    (self.s_mem_addr[i])
             _.i_din     (self.s_mem_din[i])
             _.o_dout    (self.s_mem_dout[i])
+
+        # memory controllers
+        self.u_ctrl = List()
+        self.s_iter2mem_wena = List()
+        self.s_iter2mem_addr = List()
+        self.s_iter2mem_din = List()
+        self.s_ctrl_data_nb = List()
+        self.s_ctrl_data_we = List()
+        self.s_ctrl_done = List()
+        self.s_ctrl_ack = List()
+        for i in range(mem_nb):
+            self.s_iter2mem_wena[i] = Sig()
+            self.s_iter2mem_addr[i] = Sig()
+            self.s_iter2mem_din[i] = Sig()
+            self.s_ctrl_data_nb[i] = _ = Sig()
+            _.d = 0
+            self.s_ctrl_data_we[i] = Sig()
+            self.s_ctrl_done[i] = Sig()
+            self.s_ctrl_ack[i] = Sig()
+
+            self.u_ctrl[i] = _ = controller()
+            _.i_iter_wena   (self.s_iter2mem_wena[i])
+            _.i_iter_addr   (self.s_iter2mem_addr[i])
+            _.i_iter_din    (self.s_iter2mem_din[i])
+            _.i_data_nb     (self.s_ctrl_data_nb[i])
+            _.i_data_we     (self.s_ctrl_data_we[i])
+            _.o_done        (self.s_ctrl_done[i])
+            _.i_ack         (self.s_ctrl_ack[i])
+            _.o_mem_wena    (self.s_mem_wena[i])
+            _.o_mem_addr    (self.s_mem_addr[i])
+            _.o_mem_din     (self.s_mem_din[i])
+            _.i_mem_dout    (self.s_mem_dout[i])
 
         # iterators
         self.u_iter = List()
@@ -122,6 +157,7 @@ class FPGA(Module):
         self.s_iter_rmem1_i = List()
         self.s_iter_wmem_i = List()
         self.s_iter_func_i = List()
+
         for i in range(iter_nb):
             self.s_iter_rmem0_i[i] = _ = Sig()
             _.d = -1
@@ -131,6 +167,7 @@ class FPGA(Module):
             _.d = -1
             self.s_iter_func_i[i] = _ = Sig()
             _.d = -1
+
         self.u_xbar = _ = crossbar(mem_nb, iter_nb, func_nb)
         for i in range(iter_nb):
             _.i_iter_rmem0_i[i]     (self.s_iter_rmem0_i[i])
@@ -143,16 +180,18 @@ class FPGA(Module):
             _.i_iter_wena[i]        (self.s_iter_wena[i])
             _.i_iter_arg_valid[i]   (self.s_iter_arg_valid[i])
             _.o_iter_res_valid[i]   (self.s_iter_res_valid[i])
+
         for i in range(func_nb):
             _.o_func_arg0[i]        (self.s_func_arg0[i])
             _.o_func_arg1[i]        (self.s_func_arg1[i])
             _.o_func_arg_valid[i]   (self.s_func_arg_valid[i])
             _.i_func_res[i]         (self.s_func_res[i])
             _.i_func_res_valid[i]   (self.s_func_res_valid[i])
+
         for i in range(mem_nb):
-            _.o_mem_wena[i] (self.s_mem_wena[i])
-            _.o_mem_addr[i] (self.s_mem_addr[i])
-            _.o_mem_din[i]  (self.s_mem_din[i])
+            _.o_mem_wena[i] (self.s_iter2mem_wena[i])
+            _.o_mem_addr[i] (self.s_iter2mem_addr[i])
+            _.o_mem_din[i]  (self.s_iter2mem_din[i])
             _.i_mem_dout[i] (self.s_mem_dout[i])
 
     def set_cycle_nb(self, cycle_nb=-1):
@@ -174,7 +213,8 @@ class FPGA(Module):
         self.s_iter_rmem1_i[iter_i].d = rmem1_i
         self.s_iter_wmem_i[iter_i].d = wmem_i
         self.s_iter_ack[iter_i].d = 0
-        self.run(trace=self.trace)
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
 
     def done(self, iter_i):
         # operation completion check
@@ -192,5 +232,31 @@ class FPGA(Module):
             done = True
         else:
             done = False
-        self.run(trace=self.trace)
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
+        return done
+
+    def mem_copy(self, to_fpga, mem_i, array_ptr, data_nb):
+        # memory read/write
+        self.s_ctrl_data_nb[mem_i].d = data_nb
+        self.s_ctrl_data_we[mem_i].d = to_fpga
+        self.u_ctrl[mem_i].array_ptr = array_ptr
+        self.s_ctrl_ack[mem_i].d = 0
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
+
+    def mem_done(self, mem_i):
+        # memory copy completion check
+        # software is polling, run the FPGA
+        # return True if the memory copy is done, False otherwise
+        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+            return True
+        if self.s_ctrl_done[mem_i].d == 1:
+            self.s_ctrl_data_nb[mem_i].d = 0
+            self.s_ctrl_ack[mem_i].d = 1
+            done = True
+        else:
+            done = False
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
         return done

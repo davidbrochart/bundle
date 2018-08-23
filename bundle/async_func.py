@@ -59,13 +59,7 @@ class FPGA_state(object):
         self.free_iter_nb += 1
         self.iter_busy[i] = False
 
-#event_loop = None
-#def set_event_loop():
-#    global event_loop
-#    event_loop = loop
-
 def async_binary_func(func, a0, a1, res):
-    #mem_nb = math.ceil(a0.nbytes / fpga.mem_bytes)
     mem_bytes = fpga.config['mem_depth'] * 8 # width 64 bits
     idx = 0
     byte_nb = a0.nbytes # remaining bytes to send
@@ -75,7 +69,6 @@ def async_binary_func(func, a0, a1, res):
         # this loop is done when all operations have been scheduled
         done = False
         while not done:
-            print(f'byte_nb = {byte_nb}')
             # this loop is done when there are not enough ressources
             # left for a new operation to be scheduled, or when all
             # operations have been scheduled
@@ -91,8 +84,9 @@ def async_binary_func(func, a0, a1, res):
                 # tasks
                 t0 = asyncio.ensure_future(ddr2fpga(a0_ptr, nbytes, mem_i0))
                 t1 = asyncio.ensure_future(ddr2fpga(a1_ptr, nbytes, mem_i1))
-                t2 = binary_func(func, t0, t1, nbytes, mem_i0, mem_i1, mem_i2, res_ptr, fpga_state)
-                tasks.append(t2)
+                t2 = asyncio.ensure_future(binary_func(func, nbytes, mem_i0, mem_i1, mem_i2, fpga_state, [t0, t1]))
+                t3 = asyncio.ensure_future(fpga2ddr(res_ptr, nbytes, mem_i2, fpga_state, [t2]))
+                tasks += [t0, t1, t2, t3]
                 byte_nb -= nbytes
                 idx += nbytes // 8
                 if byte_nb == 0:
@@ -100,11 +94,11 @@ def async_binary_func(func, a0, a1, res):
                     done = True
             else:
                 # not enough free ressources,
-                # wait for one operation to complete
+                # wait for one task to complete
                 done = True
         if byte_nb > 0:
             # still some data to process, schedule more operations
-            # (first operation to complete will free up ressources)
+            # (first task to complete will free up ressources)
             when = asyncio.FIRST_COMPLETED
         else:
             # all operations have been scheduled, wait for all of them to complete
