@@ -25,6 +25,8 @@ class FPGA_state(object):
         self.mem_busy = [False for i in range(self.mem_nb)]
         self.iter_busy = [False for i in range(self.iter_nb)]
         self.func_busy = [False for i in range(self.allfunc_nb)]
+        self.func_freed = {func: asyncio.Event() for func in ['add', 'mul']}
+        self.iter_freed = asyncio.Event()
     def alloc(self, busy, nb, i0=0, i1=None):
         res = []
         if i1 is None:
@@ -55,9 +57,11 @@ class FPGA_state(object):
     def func_free(self, func, i):
         self.free_func_nb[func] += 1
         self.func_busy[i] = False
+        self.func_freed[func].set()
     def iter_free(self, i):
         self.free_iter_nb += 1
         self.iter_busy[i] = False
+        self.iter_freed.set()
 
 def async_binary_func(func, a0, a1, res):
     mem_bytes = fpga.config['mem_depth'] * 8 # width 64 bits

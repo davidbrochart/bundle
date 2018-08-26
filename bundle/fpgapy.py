@@ -46,8 +46,11 @@ import ctypes
 from .async_func import *
 from .fpga import FPGA
 
-fpga = FPGA(iter_nb=4, mem_nb=48, mem_depth=256, add_nb=4, mul_nb=4)
-set_fpga(fpga)
+fpga = None
+def set_config(*args, **kwargs):
+    global fpga
+    fpga = FPGA(*args, **kwargs)
+    set_fpga(fpga)
 
 from math import sqrt
 import operator

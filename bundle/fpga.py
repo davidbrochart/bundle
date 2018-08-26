@@ -28,17 +28,16 @@ class FPGA(Module):
     '''
 
     def __init__(self, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
-        #set_fpga(self)
         self.cycle_nb = -1
         self.randmax = 2
         func_nb = add_nb + mul_nb
         self.config = {
                 'iter_nb': iter_nb,
-                'mem_nb': mem_nb,
-                'mem_depth': mem_depth,
                 'func_nb': func_nb,
                 'add_nb': add_nb,
-                'mul_nb': mul_nb
+                'mul_nb': mul_nb,
+                'mem_nb': mem_nb,
+                'mem_depth': mem_depth
                 }
 
         self.trace = None
@@ -196,9 +195,6 @@ class FPGA(Module):
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb
-
-    def logic(self):
-        pass
 
     def set_trace(self, trace):
         self.trace = trace
