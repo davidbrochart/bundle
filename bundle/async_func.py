@@ -1,18 +1,18 @@
 import asyncio
 
 async def ddr2fpga(array_ptr, nbytes, mem_i, fpga, await_tasks=[]):
-    print('ddr2fpga start')
     for t in await_tasks:
         await t
+    print('ddr2fpga start')
     fpga.mem_copy(1, mem_i, array_ptr, nbytes // 8)
     while not fpga.mem_done(mem_i):
         await asyncio.sleep(0)
     print('ddr2fpga done')
 
 async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[]):
-    print('fpga2ddr start')
     for t in await_tasks:
         await t
+    print('fpga2ddr start')
     for i in free_mem:
         if i != mem_i:
             fpga.state.mem_free(i)
@@ -23,9 +23,9 @@ async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[]):
     print('fpga2ddr done')
 
 async def binary_func(func, nbytes, mem_i0, mem_i1, mem_i2, fpga, await_tasks=[]):
-    print(f'binary_func({func}) start')
     for t in await_tasks:
         await t
+    print(f'binary_func({func}) start')
     while fpga.state.free_func_nb[func] == 0:
         await fpga.state.func_freed[func].wait()
         fpga.state.func_freed[func].clear()
