@@ -1,12 +1,13 @@
 from pyclk import Sig, Reg, In, Out, List, Module
 from random import randint
+import asyncio
 
 from .memory import memory
 from .controller import controller
 from .iterator import iterator
 from .crossbar import crossbar
 from .functions import func
-#from .fpga_op import set_fpga
+from .expression import set_fpga
 
 class FPGA(Module):
     '''
@@ -193,6 +194,14 @@ class FPGA(Module):
             _.o_mem_din[i]  (self.s_iter2mem_din[i])
             _.i_mem_dout[i] (self.s_mem_dout[i])
 
+        self.state = FPGA_state(self)
+        set_fpga(self)
+
+    def task(self):
+        while True:
+            yield self.wait(100)
+            print(f'Time is {self.time}')
+
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb
 
@@ -256,3 +265,58 @@ class FPGA(Module):
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
         return done
+
+class FPGA_state(object):
+    def __init__(self, fpga):
+        self.mem_nb = fpga.config['mem_nb']
+        self.iter_nb = fpga.config['iter_nb']
+        self.allfunc_nb = fpga.config['func_nb']
+        self.func_nb = {func: fpga.config[f'{func}_nb'] for func in ['add', 'mul']}
+        self.func_i0 = {func: fpga.config[f'{func}_i0'] for func in ['add', 'mul']}
+        self.func_i1 = {func: fpga.config[f'{func}_i1'] for func in ['add', 'mul']}
+        self.free_mem_nb = self.mem_nb
+        self.free_iter_nb = self.iter_nb
+        self.free_func_nb = {func: self.func_nb[func] for func in ['add', 'mul']}
+        self.mem_busy = [False for i in range(self.mem_nb)]
+        self.iter_busy = [False for i in range(self.iter_nb)]
+        self.func_busy = [False for i in range(self.allfunc_nb)]
+        self.func_freed = {func: asyncio.Event() for func in ['add', 'mul']}
+        self.iter_freed = asyncio.Event()
+    def alloc(self, busy, nb, i0=0, i1=None):
+        res = []
+        if i1 is None:
+            i1 = len(busy)
+        i = i0
+        for _ in range(nb):
+            while busy[i]:
+                i += 1
+                if i == i1:
+                    i = i0
+            busy[i] = True
+            res.append(i)
+        if nb == 1:
+            return res[0]
+        return res
+    def mem_alloc(self, nb=1):
+        self.free_mem_nb -= nb
+        return self.alloc(self.mem_busy, nb)
+    def iter_alloc(self, nb=1):
+        self.free_iter_nb -= nb
+        return self.alloc(self.iter_busy, nb)
+    def func_alloc(self, func, nb=1):
+        self.free_func_nb[func] -= nb
+        return self.alloc(self.func_busy, nb, i0=self.func_i0[func], i1=self.func_i1[func])
+    def mem_free(self, i):
+        assert self.mem_busy[i]
+        self.free_mem_nb += 1
+        self.mem_busy[i] = False
+    def func_free(self, func, i):
+        assert self.func_busy[i]
+        self.free_func_nb[func] += 1
+        self.func_busy[i] = False
+        self.func_freed[func].set()
+    def iter_free(self, i):
+        assert self.iter_busy[i]
+        self.free_iter_nb += 1
+        self.iter_busy[i] = False
+        self.iter_freed.set()
