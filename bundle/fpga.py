@@ -28,11 +28,12 @@ class FPGA(Module):
     - 24 memories
     '''
 
-    def __init__(self, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
+    def __init__(self, ctrl_nb, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
         self.cycle_nb = -1
         self.randmax = 2
         func_nb = add_nb + mul_nb
         self.config = {
+                'ctrl_nb': ctrl_nb,
                 'iter_nb': iter_nb,
                 'func_nb': func_nb,
                 'add_nb': add_nb,
@@ -62,36 +63,42 @@ class FPGA(Module):
             _.o_dout    (self.s_mem_dout[i])
 
         # memory controllers
-        self.u_ctrl = List()
         self.s_iter2mem_wena = List()
         self.s_iter2mem_addr = List()
         self.s_iter2mem_din = List()
+        self.s_ctrl_mem_i = List()
         self.s_ctrl_data_nb = List()
         self.s_ctrl_data_we = List()
         self.s_ctrl_done = List()
         self.s_ctrl_ack = List()
+
         for i in range(mem_nb):
             self.s_iter2mem_wena[i] = Sig()
             self.s_iter2mem_addr[i] = Sig()
             self.s_iter2mem_din[i] = Sig()
+        for i in range(ctrl_nb):
+            self.s_ctrl_mem_i[i] = _ = Sig()
             self.s_ctrl_data_nb[i] = _ = Sig()
             _.d = 0
             self.s_ctrl_data_we[i] = Sig()
             self.s_ctrl_done[i] = Sig()
             self.s_ctrl_ack[i] = Sig()
 
-            self.u_ctrl[i] = _ = controller()
-            _.i_iter_wena   (self.s_iter2mem_wena[i])
-            _.i_iter_addr   (self.s_iter2mem_addr[i])
-            _.i_iter_din    (self.s_iter2mem_din[i])
-            _.i_data_nb     (self.s_ctrl_data_nb[i])
-            _.i_data_we     (self.s_ctrl_data_we[i])
-            _.o_done        (self.s_ctrl_done[i])
-            _.i_ack         (self.s_ctrl_ack[i])
-            _.o_mem_wena    (self.s_mem_wena[i])
-            _.o_mem_addr    (self.s_mem_addr[i])
-            _.o_mem_din     (self.s_mem_din[i])
-            _.i_mem_dout    (self.s_mem_dout[i])
+        self.u_ctrl = _ = controller(ctrl_nb, mem_nb)
+        for i in range(mem_nb):
+            _.i_iter_wena[i](self.s_iter2mem_wena[i])
+            _.i_iter_addr[i](self.s_iter2mem_addr[i])
+            _.i_iter_din[i] (self.s_iter2mem_din[i])
+            _.o_mem_wena[i] (self.s_mem_wena[i])
+            _.o_mem_addr[i] (self.s_mem_addr[i])
+            _.o_mem_din[i]  (self.s_mem_din[i])
+            _.i_mem_dout[i] (self.s_mem_dout[i])
+        for i in range(ctrl_nb):
+            _.i_mem_i[i]    (self.s_ctrl_mem_i[i])
+            _.i_data_nb[i]  (self.s_ctrl_data_nb[i])
+            _.i_data_we[i]  (self.s_ctrl_data_we[i])
+            _.o_done[i]     (self.s_ctrl_done[i])
+            _.i_ack[i]      (self.s_ctrl_ack[i])
 
         # iterators
         self.u_iter = List()
@@ -241,24 +248,25 @@ class FPGA(Module):
         self.run(clkNb=clkNb, trace=self.trace)
         return done
 
-    def mem_copy(self, to_fpga, mem_i, array_ptr, data_nb):
+    def mem_copy(self, to_fpga, ctrl_i, mem_i, array_ptr, data_nb):
         # memory read/write
-        self.s_ctrl_data_nb[mem_i].d = data_nb
-        self.s_ctrl_data_we[mem_i].d = to_fpga
-        self.u_ctrl[mem_i].array_ptr = array_ptr
-        self.s_ctrl_ack[mem_i].d = 0
+        self.s_ctrl_mem_i[ctrl_i].d = mem_i
+        self.s_ctrl_data_nb[ctrl_i].d = data_nb
+        self.s_ctrl_data_we[ctrl_i].d = to_fpga
+        self.u_ctrl.array_ptr[ctrl_i] = array_ptr
+        self.s_ctrl_ack[ctrl_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
 
-    def mem_done(self, mem_i):
+    def mem_done(self, ctrl_i):
         # memory copy completion check
         # software is polling, run the FPGA
         # return True if the memory copy is done, False otherwise
         if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
             return True
-        if self.s_ctrl_done[mem_i].d == 1:
-            self.s_ctrl_data_nb[mem_i].d = 0
-            self.s_ctrl_ack[mem_i].d = 1
+        if self.s_ctrl_done[ctrl_i].d == 1:
+            self.s_ctrl_data_nb[ctrl_i].d = 0
+            self.s_ctrl_ack[ctrl_i].d = 1
             done = True
         else:
             done = False
@@ -269,18 +277,22 @@ class FPGA(Module):
 class FPGA_state(object):
     def __init__(self, fpga):
         self.mem_nb = fpga.config['mem_nb']
+        self.ctrl_nb = fpga.config['ctrl_nb']
         self.iter_nb = fpga.config['iter_nb']
         self.allfunc_nb = fpga.config['func_nb']
         self.func_nb = {func: fpga.config[f'{func}_nb'] for func in ['add', 'mul']}
         self.func_i0 = {func: fpga.config[f'{func}_i0'] for func in ['add', 'mul']}
         self.func_i1 = {func: fpga.config[f'{func}_i1'] for func in ['add', 'mul']}
         self.free_mem_nb = self.mem_nb
+        self.free_ctrl_nb = self.ctrl_nb
         self.free_iter_nb = self.iter_nb
         self.free_func_nb = {func: self.func_nb[func] for func in ['add', 'mul']}
         self.mem_busy = [False for i in range(self.mem_nb)]
+        self.ctrl_busy = [False for i in range(self.ctrl_nb)]
         self.iter_busy = [False for i in range(self.iter_nb)]
         self.func_busy = [False for i in range(self.allfunc_nb)]
         self.func_freed = {func: asyncio.Event() for func in ['add', 'mul']}
+        self.ctrl_freed = asyncio.Event()
         self.iter_freed = asyncio.Event()
     def alloc(self, busy, nb, i0=0, i1=None):
         res = []
@@ -300,6 +312,9 @@ class FPGA_state(object):
     def mem_alloc(self, nb=1):
         self.free_mem_nb -= nb
         return self.alloc(self.mem_busy, nb)
+    def ctrl_alloc(self, nb=1):
+        self.free_ctrl_nb -= nb
+        return self.alloc(self.ctrl_busy, nb)
     def iter_alloc(self, nb=1):
         self.free_iter_nb -= nb
         return self.alloc(self.iter_busy, nb)
@@ -315,6 +330,11 @@ class FPGA_state(object):
         self.free_func_nb[func] += 1
         self.func_busy[i] = False
         self.func_freed[func].set()
+    def ctrl_free(self, i):
+        assert self.ctrl_busy[i]
+        self.free_ctrl_nb += 1
+        self.ctrl_busy[i] = False
+        self.ctrl_freed.set()
     def iter_free(self, i):
         assert self.iter_busy[i]
         self.free_iter_nb += 1

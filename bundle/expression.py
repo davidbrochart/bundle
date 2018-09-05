@@ -246,7 +246,7 @@ class Parser:
 
     def add(self, a, b, c=None, fpga=True):
         if fpga:
-            return (binary_func, 'add', a, b, c, [a, b])
+            return (binary_func, 'add', a, b, c)
         else:
             return np.add(a, b)
 
@@ -255,7 +255,7 @@ class Parser:
 
     def mul(self, a, b, c=None, fpga=True):
         if fpga:
-            return (binary_func, 'mul', a, b, c, [a, b])
+            return (binary_func, 'mul', a, b, c)
         else:
             return np.multiply(a, b)
 
@@ -813,12 +813,21 @@ def evaluate(expression, toFpga=True):
             if fpga.state.free_mem_nb >= required_mem_nb:
                 mem = fpga.state.mem_alloc(required_mem_nb)
                 # tasks
-                t = [asyncio.ensure_future(ddr2fpga(in_arrays[i][idx:], nbytes, mem[i], fpga)) for i in range(len(var))]
+                # copy data from DDR to FPGA memory in the order that they are needed,
+                # because limited number of DMAs. But queue them without waiting for computation
+                # because it is independant and should be done ASAP.
+                t = [None for i in range(len(var))]
+                for task in tasks:
+                    if task[0] == binary_func:
+                        ii = task[2:4]
+                        for i in ii:
+                            if (i < len(var)) and (t[i] is None):
+                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx:], nbytes, mem[i], fpga))
                 for task in tasks:
                     if task[0] == binary_func:
                         func = task[1]
                         i0, i1, i2 = task[2:5]
-                        await_tasks = [t[t_i] for t_i in task[5]]
+                        await_tasks = [t[i0], t[i1]]
                         t.append(asyncio.ensure_future(binary_func(func, nbytes, mem[i0], mem[i1], mem[i2], fpga, await_tasks)))
                 # last task is final operation, get its result memory
                 i = tasks[-1][4]
