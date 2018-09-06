@@ -71,7 +71,7 @@ begin
             end if;
             if (r_state = ITERATING) or (r_state = FINISHING) then
                 if i_res_valid = '1' then
-                    if w_raddr /= std_logic_vector(conv_unsigned(conv_integer(unsigned(r_data_nb)) - 1, MEM_DEPTH_BITNB - 1)) then
+                    if r_waddr /= std_logic_vector(conv_unsigned(conv_integer(unsigned(r_data_nb)) - 1, MEM_DEPTH_BITNB - 1)) then
                         r_waddr <= std_logic_vector(conv_unsigned(conv_integer(unsigned(r_waddr)) + 1, MEM_DEPTH_BITNB - 1));
                     end if;
                 end if;

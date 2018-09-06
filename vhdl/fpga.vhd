@@ -11,12 +11,12 @@ entity fpga is
     i_iter_wmem_i   : in  array (0 to ITER_NB - 1) of std_logic_vector(MEM_BITNB - 1 downto 0);
     i_iter_ack      : in  array (0 to ITER_NB - 1) of std_logic;
 
-    i_ctrl_data_nb  : in  array (0 to MEM_NB - 1) of std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
-    i_ctrl_data_we  : in  array (0 to MEM_NB - 1) of std_logic;
-    i_ctrl_ack      : in  array (0 to MEM_NB - 1) of std_logic;
+    i_ctrl_data_nb  : in  array (0 to CTRL_NB - 1) of std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
+    i_ctrl_data_we  : in  array (0 to CTRL_NB - 1) of std_logic;
+    i_ctrl_ack      : in  array (0 to CTRL_NB - 1) of std_logic;
 
     o_iter_done     : in  array (0 to ITER_NB - 1) of std_logic;
-    o_ctrl_done     : in  array (0 to MEM_NB - 1) of std_logic
+    o_ctrl_done     : in  array (0 to CTRL_NB - 1) of std_logic
     --u_ctrl[mem_i].array_ptr = array_ptr TODO
 );
 end fpga;
@@ -40,6 +40,20 @@ architecture rtl of fpga is
     signal s_func_res:          array (0 to FUNC_NB - 1) of std_logic_vector(MEM_WIDTH - 1 downto 0);
     signal s_func_res_valid:    array (0 to FUNC_NB - 1) of std_logic;
 begin
+    u_ctrl: controller
+    port map (
+        i_iter_wena => s_iter2mem_wena,
+        i_iter_addr => s_iter2mem_addr,
+        i_iter_din  => s_iter2mem_din,
+        i_data_nb   => i_ctrl_data_nb,
+        i_data_we   => i_ctrl_data_we,
+        o_done      => o_ctrl_done,
+        i_ack       => i_ctrl_ack,
+        o_mem_wena  => s_mem_wena,
+        o_mem_addr  => s_mem_addr,
+        o_mem_din   => s_mem_din,
+        i_mem_dout  => s_mem_dout
+    );
     GEN_MEM_NB: for I in 0 to MEM_NB - 1 generate
         u_mem: memory
         port map (
@@ -47,20 +61,6 @@ begin
             i_addr  => s_mem_addr(I),
             i_din   => s_mem_din(I),
             o_dout  => s_mem_dout(I)
-        );
-        u_ctrl: controller
-        port map (
-            i_iter_wena => s_iter2mem_wena(I),
-            i_iter_addr => s_iter2mem_addr(I),
-            i_iter_din  => s_iter2mem_din(I),
-            i_data_nb   => i_ctrl_data_nb(I),
-            i_data_we   => i_ctrl_data_we(I),
-            o_done      => o_ctrl_done(I),
-            i_ack       => i_ctrl_ack(I),
-            o_mem_wena  => s_mem_wena(I),
-            o_mem_addr  => s_mem_addr(I),
-            o_mem_din   => s_mem_din(I),
-            i_mem_dout  => s_mem_dout(I)
         );
     end generate GEN_MEM_NB;
     GEN_ITER_NB: for I in 0 to ITER_NB - 1 generate
