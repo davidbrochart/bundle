@@ -3,10 +3,10 @@ import asyncio
 async def ddr2fpga(array_ptr, nbytes, mem_i, fpga, await_tasks=[]):
     for t in await_tasks:
         await t
-    print(f'ddr2fpga start (mem_i = {mem_i})')
     while fpga.state.free_ctrl_nb == 0:
         await fpga.state.ctrl_freed.wait()
         fpga.state.ctrl_freed.clear()
+    print(f'ddr2fpga start (mem_i = {mem_i})')
     ctrl_i = fpga.state.ctrl_alloc()
     fpga.mem_copy(1, ctrl_i, mem_i, array_ptr, nbytes // 8)
     while not fpga.mem_done(ctrl_i):
@@ -17,7 +17,6 @@ async def ddr2fpga(array_ptr, nbytes, mem_i, fpga, await_tasks=[]):
 async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[]):
     for t in await_tasks:
         await t
-    print('fpga2ddr start')
     # free all allocated memories except result memory
     for i in free_mem:
         if i != mem_i:
@@ -25,6 +24,7 @@ async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[]):
     while fpga.state.free_ctrl_nb == 0:
         await fpga.state.ctrl_freed.wait()
         fpga.state.ctrl_freed.clear()
+    print('fpga2ddr start')
     ctrl_i = fpga.state.ctrl_alloc()
     fpga.mem_copy(0, ctrl_i, mem_i, array_ptr, nbytes // 8)
     while not fpga.mem_done(ctrl_i):

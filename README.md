@@ -30,12 +30,12 @@ functions).
 
 The software is responsible for orchestrating the evaluation of an expression,
 e.g. `a * b + c`. It breaks down the expression into a sequence of operations
-(here `tmp = a * b` then `tmp + c`. It allocates FPGA memory for the evaluation,
-copies chunks of the data from the host DDR memory to the FPGA memory, schedules
-operations, and copies back the result to the host DDR memory. Since the FPGA
-can execute many operations in parallel, the scheduler uses asynchronous
-programming (and `asyncio` in particular) to manage memory copy and computation
-tasks.
+(here `tmp = a * b` then `tmp + c`). It allocates FPGA memory for the
+evaluation, copies chunks of the data from the host DDR memory to the FPGA
+memory, schedules operations, and copies back the result to the host DDR memory.
+Since the FPGA can execute many operations in parallel, the scheduler uses
+asynchronous programming (and `asyncio` in particular) to manage memory copy and
+computation tasks.
 
 # Install
 
