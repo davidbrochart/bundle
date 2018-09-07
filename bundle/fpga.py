@@ -33,6 +33,9 @@ class FPGA(Module):
         self.cycle_nb = -1
         self.randmax = 2
         func_nb = add_nb + mul_nb
+        self.mem_nb = mem_nb
+        self.ddr2fpga_nb = ddr2fpga_nb
+        self.fpga2ddr_nb = fpga2ddr_nb
         self.config = {
                 'ddr2fpga_nb': ddr2fpga_nb,
                 'fpga2ddr_nb': fpga2ddr_nb,
@@ -73,7 +76,7 @@ class FPGA(Module):
         self.s_ddr2fpga_addr = List()
         self.s_ddr2fpga_din = List()
 
-        for i in range(mem_nb):
+        for i in range(mem_nb * ddr2fpga_nb):
             self.s_ddr2fpga_wena[i] = _ = Sig()
             _.d = 0
             self.s_ddr2fpga_addr[i] = _ = Sig()
@@ -87,16 +90,17 @@ class FPGA(Module):
             self.s_ddr2fpga_done[i] = Sig()
             self.s_ddr2fpga_ack[i] = Sig()
 
-        self.u_ddr2fpga = _ = ddr2fpga(ddr2fpga_nb, mem_nb)
-        for i in range(mem_nb):
-            _.o_mem_wena[i] (self.s_ddr2fpga_wena[i])
-            _.o_mem_addr[i] (self.s_ddr2fpga_addr[i])
-            _.o_mem_din[i]  (self.s_ddr2fpga_din[i])
+        self.u_ddr2fpga = List()
         for i in range(ddr2fpga_nb):
-            _.i_mem_i[i]    (self.s_ddr2fpga_mem_i[i])
-            _.i_data_nb[i]  (self.s_ddr2fpga_data_nb[i])
-            _.o_done[i]     (self.s_ddr2fpga_done[i])
-            _.i_ack[i]      (self.s_ddr2fpga_ack[i])
+            self.u_ddr2fpga[i] = _ = ddr2fpga(mem_nb)
+            _.i_mem_i       (self.s_ddr2fpga_mem_i[i])
+            _.i_data_nb     (self.s_ddr2fpga_data_nb[i])
+            _.o_done        (self.s_ddr2fpga_done[i])
+            _.i_ack         (self.s_ddr2fpga_ack[i])
+            for j in range(mem_nb):
+                _.o_mem_wena[j] (self.s_ddr2fpga_wena[i * mem_nb + j])
+                _.o_mem_addr[j] (self.s_ddr2fpga_addr[i * mem_nb + j])
+                _.o_mem_din[j]  (self.s_ddr2fpga_din[i * mem_nb + j])
 
         # fpga2ddr
         self.s_fpga2ddr_mem_i = List()
@@ -106,7 +110,7 @@ class FPGA(Module):
         self.s_fpga2ddr_addr = List()
         self.s_fpga2ddr_din = List()
 
-        for i in range(mem_nb):
+        for i in range(mem_nb * fpga2ddr_nb):
             self.s_fpga2ddr_addr[i] = _ = Sig()
             _.d = 0
             self.s_fpga2ddr_din[i] = _ = Sig()
@@ -118,16 +122,17 @@ class FPGA(Module):
             self.s_fpga2ddr_done[i] = Sig()
             self.s_fpga2ddr_ack[i] = Sig()
 
-        self.u_fpga2ddr = _ = fpga2ddr(fpga2ddr_nb, mem_nb)
-        for i in range(mem_nb):
-            _.o_mem_addr[i] (self.s_fpga2ddr_addr[i])
-            _.o_mem_din[i]  (self.s_fpga2ddr_din[i])
-            _.i_mem_dout[i] (self.s_mem_dout[i])
+        self.u_fpga2ddr = List()
         for i in range(fpga2ddr_nb):
-            _.i_mem_i[i]    (self.s_fpga2ddr_mem_i[i])
-            _.i_data_nb[i]  (self.s_fpga2ddr_data_nb[i])
-            _.o_done[i]     (self.s_fpga2ddr_done[i])
-            _.i_ack[i]      (self.s_fpga2ddr_ack[i])
+            self.u_fpga2ddr[i] = _ = fpga2ddr(mem_nb)
+            _.i_mem_i    (self.s_fpga2ddr_mem_i[i])
+            _.i_data_nb  (self.s_fpga2ddr_data_nb[i])
+            _.o_done     (self.s_fpga2ddr_done[i])
+            _.i_ack      (self.s_fpga2ddr_ack[i])
+            for j in range(mem_nb):
+                _.o_mem_addr[j] (self.s_fpga2ddr_addr[i * mem_nb + j])
+                _.o_mem_din[j]  (self.s_fpga2ddr_din[i * mem_nb + j])
+                _.i_mem_dout[j] (self.s_mem_dout[j])
 
         # iterators
         self.u_iter = List()
@@ -245,16 +250,20 @@ class FPGA(Module):
         set_fpga(self)
 
     def logic(self):
-        for i in range(self.config['mem_nb']):
+        for i in range(self.mem_nb):
             self.s_mem_addr[i].d = 0
             self.s_mem_din[i].d  = 0
             self.s_mem_wena[i].d = 0
-        for i in range(self.config['mem_nb']):
-            self.s_mem_addr[i].d |= self.s_fpga2ddr_addr[i].d
-            self.s_mem_din[i].d  |= self.s_fpga2ddr_din[i].d
-            self.s_mem_wena[i].d |= self.s_ddr2fpga_wena[i].d
-            self.s_mem_addr[i].d |= self.s_ddr2fpga_addr[i].d
-            self.s_mem_din[i].d  |= self.s_ddr2fpga_din[i].d
+        for i in range(self.fpga2ddr_nb):
+            for j in range(self.mem_nb):
+                self.s_mem_addr[j].d |= self.s_fpga2ddr_addr[i * self.mem_nb + j].d
+                self.s_mem_din[j].d  |= self.s_fpga2ddr_din[i * self.mem_nb + j].d
+        for i in range(self.ddr2fpga_nb):
+            for j in range(self.mem_nb):
+                self.s_mem_wena[j].d |= self.s_ddr2fpga_wena[i * self.mem_nb + j].d
+                self.s_mem_addr[j].d |= self.s_ddr2fpga_addr[i * self.mem_nb + j].d
+                self.s_mem_din[j].d  |= self.s_ddr2fpga_din[i * self.mem_nb + j].d
+        for i in range(self.mem_nb):
             self.s_mem_addr[i].d |= self.s_iter2mem_addr[i].d
             self.s_mem_din[i].d  |= self.s_iter2mem_din[i].d
             self.s_mem_wena[i].d |= self.s_iter2mem_wena[i].d
@@ -307,7 +316,7 @@ class FPGA(Module):
         # memory write
         self.s_ddr2fpga_mem_i[ddr2fpga_i].d = mem_i
         self.s_ddr2fpga_data_nb[ddr2fpga_i].d = data_nb
-        self.u_ddr2fpga.array_ptr[ddr2fpga_i] = array_ptr
+        self.u_ddr2fpga[ddr2fpga_i].array_ptr = array_ptr
         self.s_ddr2fpga_ack[ddr2fpga_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
@@ -332,7 +341,7 @@ class FPGA(Module):
         # memory read
         self.s_fpga2ddr_mem_i[fpga2ddr_i].d = mem_i
         self.s_fpga2ddr_data_nb[fpga2ddr_i].d = data_nb
-        self.u_fpga2ddr.array_ptr[fpga2ddr_i] = array_ptr
+        self.u_fpga2ddr[fpga2ddr_i].array_ptr = array_ptr
         self.s_fpga2ddr_ack[fpga2ddr_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
