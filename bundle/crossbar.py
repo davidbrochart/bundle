@@ -46,9 +46,12 @@ class crossbar(Module):
             self.i_func_res_valid[i] = In()
             self.i_func_res[i]       = In()
         for i in range(mem_nb):
-            self.o_mem_wena[i]       = Out()
-            self.o_mem_addr[i]       = Out()
-            self.o_mem_din[i]        = Out()
+            self.o_mem_wena[i]       = _ = Out()
+            _.d = 0
+            self.o_mem_addr[i]       = _ = Out()
+            _.d = 0
+            self.o_mem_din[i]        = _ = Out()
+            _.d = 0
             self.i_mem_dout[i]       = In()
 
     def logic(self):

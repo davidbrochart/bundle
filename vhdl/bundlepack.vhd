@@ -4,6 +4,7 @@ use ieee.math_real."ceil";
 use ieee.math_real."log2";
 
 package bundlepack is
+    constant CTRL_NB            : integer := 2;     -- controller number
     constant ITER_NB            : integer := 4;     -- iterator number
     constant ITER_BITNB         : integer := integer(ceil(log2(real(ITER_NB))));
     constant ADD_NB             : integer := 4;     -- add number
