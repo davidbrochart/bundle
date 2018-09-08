@@ -22,13 +22,10 @@ class fpga2ddr(Module):
 
         # I/O
         self.o_mem_addr     = List()
-        self.o_mem_din      = List()
         self.i_mem_dout     = List()
         self.array_ptr      = None
         for i in range(mem_nb):
             self.o_mem_addr[i]  = _ = Out()
-            _.d = 0
-            self.o_mem_din[i]   = _ = Out()
             _.d = 0
             self.i_mem_dout[i]  = In()
         self.i_mem_i     = In()
@@ -39,7 +36,6 @@ class fpga2ddr(Module):
     def logic(self):
         for i in range(self.mem_nb):
             self.o_mem_addr[i].d = 0
-            self.o_mem_din[i].d = 0
         if self.r_state.q == 'idle':
             if self.i_data_nb.d != 0:
                 self.r_state.d = 'counting'

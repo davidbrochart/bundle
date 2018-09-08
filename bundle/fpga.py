@@ -108,12 +108,9 @@ class FPGA(Module):
         self.s_fpga2ddr_done = List()
         self.s_fpga2ddr_ack = List()
         self.s_fpga2ddr_addr = List()
-        self.s_fpga2ddr_din = List()
 
         for i in range(mem_nb * fpga2ddr_nb):
             self.s_fpga2ddr_addr[i] = _ = Sig()
-            _.d = 0
-            self.s_fpga2ddr_din[i] = _ = Sig()
             _.d = 0
         for i in range(fpga2ddr_nb):
             self.s_fpga2ddr_mem_i[i] = _ = Sig()
@@ -131,7 +128,6 @@ class FPGA(Module):
             _.i_ack      (self.s_fpga2ddr_ack[i])
             for j in range(mem_nb):
                 _.o_mem_addr[j] (self.s_fpga2ddr_addr[i * mem_nb + j])
-                _.o_mem_din[j]  (self.s_fpga2ddr_din[i * mem_nb + j])
                 _.i_mem_dout[j] (self.s_mem_dout[j])
 
         # iterators
@@ -257,7 +253,6 @@ class FPGA(Module):
         for i in range(self.fpga2ddr_nb):
             for j in range(self.mem_nb):
                 self.s_mem_addr[j].d |= self.s_fpga2ddr_addr[i * self.mem_nb + j].d
-                self.s_mem_din[j].d  |= self.s_fpga2ddr_din[i * self.mem_nb + j].d
         for i in range(self.ddr2fpga_nb):
             for j in range(self.mem_nb):
                 self.s_mem_wena[j].d |= self.s_ddr2fpga_wena[i * self.mem_nb + j].d
@@ -268,10 +263,10 @@ class FPGA(Module):
             self.s_mem_din[i].d  |= self.s_iter2mem_din[i].d
             self.s_mem_wena[i].d |= self.s_iter2mem_wena[i].d
 
-    def task(self):
-        while True:
-            yield self.wait(100)
-            print(f'Time is {self.time}')
+    #def task(self):
+    #    while True:
+    #        yield self.wait(100)
+    #        print(f'Time is {self.time}')
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb
