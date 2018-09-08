@@ -18,9 +18,9 @@ The hardware is intentionally kept simple, and consists of:
 - memories: they are used to cache chunks of the host arrays in the FPGA before
   making operations on them, and write chunks of the result of these operations
 before copying them to the host DDR memory.
-- controllers: they handle who writes/reads the FPGA memories. Data can come
-  from/go to the host DDR memory, or the FPGA operators (i.e. iterators +
-functions).
+- DDR <---> FPGA streamers: they handle data copy from the DDR memory to the
+  FPGA memories (to get the function arguments) and from the FPGA memories to
+the DDR memory (to return the function results).
 - iterators: they stream data from FPGA memories, feed it to functions, and
   stream the function's result to another FPGA memory.
 - functions: they take data in and produce a result, e.g. the sum of two

@@ -11,23 +11,6 @@ from .functions import func
 from .expression import set_fpga
 
 class FPGA(Module):
-    '''
-    The FPGA top module.  It consists of:
-    - memories, where the data is stored.
-    - iterators, which stream data from/to memories.
-    - functions, which operate on streamed data.
-    For each function type (e.g. adder, multiplier, etc.), there are several
-    function instances, e.g. 8 adders. There must not be more e.g. adders than
-    iterators, because it would be useless: there would not be enough iterators
-    to feed all the adders.  There must not be less memories than e.g. 3x iterators
-    for an adder (since an adder require 3 memorie), but there can be more if we want to mask data
-    transfers with computations. Twice more memories than 3x iterators allows
-    having the next data ready for each iterator.
-    A typical setup would be e.g.:
-    - 8 adders, 8 multiplyers, 4 dividers, 8 squarers
-    - 8 iterators
-    - 24 memories
-    '''
 
     def __init__(self, ddr2fpga_nb, fpga2ddr_nb, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
         self.cycle_nb = -1
