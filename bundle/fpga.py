@@ -6,7 +6,6 @@ from .memory import memory
 from .ddr2fpga import ddr2fpga
 from .fpga2ddr import fpga2ddr
 from .iterator import iterator
-from .crossbar import crossbar
 from .functions import func
 from .expression import set_fpga, set_debug
 
