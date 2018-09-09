@@ -8,17 +8,21 @@ from .fpga2ddr import fpga2ddr
 from .iterator import iterator
 from .crossbar import crossbar
 from .functions import func
-from .expression import set_fpga
+from .expression import set_fpga, set_debug
 
 class FPGA(Module):
 
-    def __init__(self, ddr2fpga_nb, fpga2ddr_nb, iter_nb, mem_nb, mem_depth, add_nb, mul_nb):
+    def __init__(self, ddr2fpga_nb, fpga2ddr_nb, iter_nb, mem_nb, mem_depth, add_nb, mul_nb, debug=False):
         self.cycle_nb = -1
         self.randmax = 2
         func_nb = add_nb + mul_nb
+        self.debug = debug
+        set_debug(debug)
         self.mem_nb = mem_nb
         self.ddr2fpga_nb = ddr2fpga_nb
         self.fpga2ddr_nb = fpga2ddr_nb
+        self.func_nb = func_nb
+        self.iter_nb = iter_nb
         self.config = {
                 'ddr2fpga_nb': ddr2fpga_nb,
                 'fpga2ddr_nb': fpga2ddr_nb,
@@ -51,6 +55,7 @@ class FPGA(Module):
             _.o_dout    (self.s_mem_dout[i])
 
         # ddr2fpga
+        self.u_ddr2fpga = List()
         self.s_ddr2fpga_mem_i = List()
         self.s_ddr2fpga_data_nb = List()
         self.s_ddr2fpga_done = List()
@@ -59,31 +64,22 @@ class FPGA(Module):
         self.s_ddr2fpga_addr = List()
         self.s_ddr2fpga_din = List()
 
-        for i in range(mem_nb * ddr2fpga_nb):
-            self.s_ddr2fpga_wena[i] = _ = Sig()
-            _.d = 0
-            self.s_ddr2fpga_addr[i] = _ = Sig()
-            _.d = 0
-            self.s_ddr2fpga_din[i] = _ = Sig()
-            _.d = 0
         for i in range(ddr2fpga_nb):
-            self.s_ddr2fpga_mem_i[i] = _ = Sig()
-            self.s_ddr2fpga_data_nb[i] = _ = Sig()
-            _.d = 0
+            self.s_ddr2fpga_mem_i[i] = Sig()
+            self.s_ddr2fpga_data_nb[i] = Sig()
             self.s_ddr2fpga_done[i] = Sig()
             self.s_ddr2fpga_ack[i] = Sig()
+            self.s_ddr2fpga_wena[i] = Sig()
+            self.s_ddr2fpga_addr[i] = Sig()
+            self.s_ddr2fpga_din[i] = Sig()
 
-        self.u_ddr2fpga = List()
-        for i in range(ddr2fpga_nb):
-            self.u_ddr2fpga[i] = _ = ddr2fpga(mem_nb)
-            _.i_mem_i       (self.s_ddr2fpga_mem_i[i])
+            self.u_ddr2fpga[i] = _ = ddr2fpga()
             _.i_data_nb     (self.s_ddr2fpga_data_nb[i])
             _.o_done        (self.s_ddr2fpga_done[i])
             _.i_ack         (self.s_ddr2fpga_ack[i])
-            for j in range(mem_nb):
-                _.o_mem_wena[j] (self.s_ddr2fpga_wena[i * mem_nb + j])
-                _.o_mem_addr[j] (self.s_ddr2fpga_addr[i * mem_nb + j])
-                _.o_mem_din[j]  (self.s_ddr2fpga_din[i * mem_nb + j])
+            _.o_mem_wena    (self.s_ddr2fpga_wena[i])
+            _.o_mem_addr    (self.s_ddr2fpga_addr[i])
+            _.o_mem_din     (self.s_ddr2fpga_din[i])
 
         # fpga2ddr
         self.s_fpga2ddr_mem_i = List()
@@ -91,27 +87,23 @@ class FPGA(Module):
         self.s_fpga2ddr_done = List()
         self.s_fpga2ddr_ack = List()
         self.s_fpga2ddr_addr = List()
+        self.s_fpga2ddr_mem_dout = List()
+        self.u_fpga2ddr = List()
 
-        for i in range(mem_nb * fpga2ddr_nb):
-            self.s_fpga2ddr_addr[i] = _ = Sig()
-            _.d = 0
         for i in range(fpga2ddr_nb):
-            self.s_fpga2ddr_mem_i[i] = _ = Sig()
-            self.s_fpga2ddr_data_nb[i] = _ = Sig()
-            _.d = 0
+            self.s_fpga2ddr_mem_dout[i] = Sig()
+            self.s_fpga2ddr_addr[i] = Sig()
+            self.s_fpga2ddr_mem_i[i] = Sig()
+            self.s_fpga2ddr_data_nb[i] = Sig()
             self.s_fpga2ddr_done[i] = Sig()
             self.s_fpga2ddr_ack[i] = Sig()
 
-        self.u_fpga2ddr = List()
-        for i in range(fpga2ddr_nb):
-            self.u_fpga2ddr[i] = _ = fpga2ddr(mem_nb)
-            _.i_mem_i    (self.s_fpga2ddr_mem_i[i])
+            self.u_fpga2ddr[i] = _ = fpga2ddr()
             _.i_data_nb  (self.s_fpga2ddr_data_nb[i])
             _.o_done     (self.s_fpga2ddr_done[i])
             _.i_ack      (self.s_fpga2ddr_ack[i])
-            for j in range(mem_nb):
-                _.o_mem_addr[j] (self.s_fpga2ddr_addr[i * mem_nb + j])
-                _.i_mem_dout[j] (self.s_mem_dout[j])
+            _.o_mem_addr (self.s_fpga2ddr_addr[i])
+            _.i_mem_dout (self.s_fpga2ddr_mem_dout[i])
 
         # iterators
         self.u_iter = List()
@@ -124,8 +116,7 @@ class FPGA(Module):
         self.s_iter_arg_valid = List()
         self.s_iter_res_valid = List()
         for i in range(iter_nb):
-            self.s_iter_data_nb[i] = _ = Sig()
-            _.d = 0
+            self.s_iter_data_nb[i] = Sig()
             self.s_iter_ack[i] = Sig()
             self.s_iter_done[i] = Sig()
             self.s_iter_raddr[i] = Sig()
@@ -172,84 +163,56 @@ class FPGA(Module):
 
                 i += 1
 
-        # crossbar
         self.s_iter_rmem0_i = List()
         self.s_iter_rmem1_i = List()
         self.s_iter_wmem_i = List()
         self.s_iter_func_i = List()
-        self.s_iter2mem_wena = List()
-        self.s_iter2mem_addr = List()
-        self.s_iter2mem_din = List()
-
-        for i in range(mem_nb):
-            self.s_iter2mem_wena[i] = _ = Sig()
-            _.d = 0
-            self.s_iter2mem_addr[i] = _ = Sig()
-            _.d = 0
-            self.s_iter2mem_din[i] = _ = Sig()
-            _.d = 0
 
         for i in range(iter_nb):
-            self.s_iter_rmem0_i[i] = _ = Sig()
-            _.d = -1
-            self.s_iter_rmem1_i[i] = _ = Sig()
-            _.d = -1
-            self.s_iter_wmem_i[i] = _ = Sig()
-            _.d = -1
-            self.s_iter_func_i[i] = _ = Sig()
-            _.d = -1
-
-        self.u_xbar = _ = crossbar(mem_nb, iter_nb, func_nb)
-        for i in range(iter_nb):
-            _.i_iter_rmem0_i[i]     (self.s_iter_rmem0_i[i])
-            _.i_iter_rmem1_i[i]     (self.s_iter_rmem1_i[i])
-            _.i_iter_wmem_i[i]      (self.s_iter_wmem_i[i])
-            _.i_iter_func_i[i]      (self.s_iter_func_i[i])
-
-            _.i_iter_raddr[i]       (self.s_iter_raddr[i])
-            _.i_iter_waddr[i]       (self.s_iter_waddr[i])
-            _.i_iter_wena[i]        (self.s_iter_wena[i])
-            _.i_iter_arg_valid[i]   (self.s_iter_arg_valid[i])
-            _.o_iter_res_valid[i]   (self.s_iter_res_valid[i])
-
-        for i in range(func_nb):
-            _.o_func_arg0[i]        (self.s_func_arg0[i])
-            _.o_func_arg1[i]        (self.s_func_arg1[i])
-            _.o_func_arg_valid[i]   (self.s_func_arg_valid[i])
-            _.i_func_res[i]         (self.s_func_res[i])
-            _.i_func_res_valid[i]   (self.s_func_res_valid[i])
-
-        for i in range(mem_nb):
-            _.o_mem_wena[i] (self.s_iter2mem_wena[i])
-            _.o_mem_addr[i] (self.s_iter2mem_addr[i])
-            _.o_mem_din[i]  (self.s_iter2mem_din[i])
-            _.i_mem_dout[i] (self.s_mem_dout[i])
+            self.s_iter_rmem0_i[i] = Sig()
+            self.s_iter_rmem1_i[i] = Sig()
+            self.s_iter_wmem_i[i] = Sig()
+            self.s_iter_func_i[i] = Sig()
 
         self.state = FPGA_state(self)
         set_fpga(self)
 
     def logic(self):
+        # DDR <-> memory
         for i in range(self.mem_nb):
             self.s_mem_addr[i].d = 0
             self.s_mem_din[i].d  = 0
             self.s_mem_wena[i].d = 0
         for i in range(self.fpga2ddr_nb):
-            for j in range(self.mem_nb):
-                self.s_mem_addr[j].d |= self.s_fpga2ddr_addr[i * self.mem_nb + j].d
+            self.s_mem_addr[self.s_fpga2ddr_mem_i[i].d].d       |= self.s_fpga2ddr_addr[i].d
+            self.s_fpga2ddr_mem_dout[i].d                        = self.s_mem_dout[self.s_fpga2ddr_mem_i[i].d].d
         for i in range(self.ddr2fpga_nb):
-            for j in range(self.mem_nb):
-                self.s_mem_wena[j].d |= self.s_ddr2fpga_wena[i * self.mem_nb + j].d
-                self.s_mem_addr[j].d |= self.s_ddr2fpga_addr[i * self.mem_nb + j].d
-                self.s_mem_din[j].d  |= self.s_ddr2fpga_din[i * self.mem_nb + j].d
-        for i in range(self.mem_nb):
-            self.s_mem_addr[i].d |= self.s_iter2mem_addr[i].d
-            self.s_mem_din[i].d  |= self.s_iter2mem_din[i].d
-            self.s_mem_wena[i].d |= self.s_iter2mem_wena[i].d
+            self.s_mem_wena[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_wena[i].d
+            self.s_mem_addr[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_addr[i].d
+            self.s_mem_din[self.s_ddr2fpga_mem_i[i].d].d        |= self.s_ddr2fpga_din[i].d
 
-    #def task(self):
-    #    while True:
-    #        yield self.wait(100)
-    #        print(f'Time is {self.time}')
+        # memory <-> iterator <-> function
+        for i in range(self.func_nb):
+            self.s_func_arg_valid[i].d = 0
+            self.s_func_arg0[i].d = 0
+            self.s_func_arg1[i].d = 0
+        for i in range(self.iter_nb):
+            self.s_mem_addr[self.s_iter_rmem0_i[i].d].d         |= self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_rmem1_i[i].d].d         |= self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_wmem_i[i].d].d          |= self.s_iter_waddr[i].d
+            self.s_mem_wena[self.s_iter_wmem_i[i].d].d          |= self.s_iter_wena[i].d
+            self.s_mem_din[self.s_iter_wmem_i[i].d].d           |= self.s_func_res[self.s_iter_func_i[i].d].d
+            self.s_func_arg_valid[self.s_iter_func_i[i].d].d    |= self.s_iter_arg_valid[i].d
+            if self.s_iter_arg_valid[i].d == 1:
+                self.s_func_arg0[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
+                self.s_func_arg1[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
+            self.s_iter_res_valid[i].d                           = self.s_func_res_valid[self.s_iter_func_i[i].d].d
+
+    def task(self):
+        if self.debug:
+            while True:
+                yield self.wait(100)
+                print(f'Time is {self.time}')
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb
@@ -278,10 +241,6 @@ class FPGA(Module):
             return True
         if self.s_iter_done[iter_i].d == 1:
             self.s_iter_data_nb[iter_i].d = 0
-            self.s_iter_func_i[iter_i].d = -1
-            self.s_iter_rmem0_i[iter_i].d = -1
-            self.s_iter_rmem1_i[iter_i].d = -1
-            self.s_iter_wmem_i[iter_i].d = -1
             self.s_iter_ack[iter_i].d = 1
             done = True
         else:

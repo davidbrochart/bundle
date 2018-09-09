@@ -10,9 +10,8 @@ class func(Module):
         self.o_res_valid = Out()
 
     def logic(self):
-        if (self.i_arg0.d is None) or (self.i_arg1.d is None):
-            self.o_res.d = 0
-        elif self.fname == 'add':
+        self.o_res.d = 0
+        if self.fname == 'add':
             self.o_res.d = self.i_arg0.d + self.i_arg1.d
         elif self.fname == 'mul':
             self.o_res.d = self.i_arg0.d * self.i_arg1.d
