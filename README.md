@@ -18,18 +18,21 @@ The hardware is intentionally kept simple, and consists of:
 - memories: they are used to cache chunks of the host arrays in the FPGA before
   making operations on them, and write chunks of the result of these operations
 before copying them to the host DDR memory.
-- DDR <---> FPGA streamers: they handle data copy from the DDR memory to the
-  FPGA memories (to get the function arguments) and from the FPGA memories to
-the DDR memory (to return the function results).
+- DDR <-> FPGA streamers: they handle data copy from the DDR memory to the FPGA
+  memories (to get the function arguments) and from the FPGA memories to the DDR
+memory (to return the function results).
 - iterators: they stream data from FPGA memories, feed it to functions, and
   stream the function's result to another FPGA memory.
 - functions: they take data in and produce a result, e.g. the sum of two
   numbers.
-- a crossbar: it is the central piece which connects iterators to memories and
-  functions.
+
+Streamers, iterators and functions can connect to any memory, but the hardware
+doesn't have a clue what it is doing: it is just a bundle of wires. All the
+knowledge comes from the software, which maps a high-level expression down to
+low-level basic operations.
 
 The software is responsible for orchestrating the evaluation of an expression,
-e.g. `a * b + c`. It breaks down the expression into a sequence of operations
+e.g. `a * b + c`. It breaks down the expression into a sequence of functions
 (here `tmp = a * b` then `tmp + c`). It allocates FPGA memory for the
 evaluation, copies chunks of the data from the host DDR memory to the FPGA
 memory, schedules operations, and copies back the result to the host DDR memory.
