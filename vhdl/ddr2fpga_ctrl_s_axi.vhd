@@ -42,7 +42,7 @@ port (
     ap_ready              :in   STD_LOGIC;
     ap_idle               :in   STD_LOGIC;
     mem_i_V               :out  STD_LOGIC_VECTOR(5 downto 0);
-    data_nb_V             :out  STD_LOGIC_VECTOR(9 downto 0)
+    data_nb_V             :out  STD_LOGIC_VECTOR(10 downto 0)
 );
 end entity ddr2fpga_ctrl_s_axi;
 
@@ -70,8 +70,8 @@ end entity ddr2fpga_ctrl_s_axi;
 --        others  - reserved
 -- 0x14 : reserved
 -- 0x18 : Data signal of data_nb_V
---        bit 9~0 - data_nb_V[9:0] (Read/Write)
---        others  - reserved
+--        bit 10~0 - data_nb_V[10:0] (Read/Write)
+--        others   - reserved
 -- 0x1c : reserved
 -- (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
@@ -109,7 +109,7 @@ architecture behave of ddr2fpga_ctrl_s_axi is
     signal int_ier             : UNSIGNED(1 downto 0);
     signal int_isr             : UNSIGNED(1 downto 0);
     signal int_mem_i_V         : UNSIGNED(5 downto 0);
-    signal int_data_nb_V       : UNSIGNED(9 downto 0);
+    signal int_data_nb_V       : UNSIGNED(10 downto 0);
 
 
 begin
@@ -234,7 +234,7 @@ begin
                     when ADDR_MEM_I_V_DATA_0 =>
                         rdata_data <= RESIZE(int_mem_i_V(5 downto 0), 32);
                     when ADDR_DATA_NB_V_DATA_0 =>
-                        rdata_data <= RESIZE(int_data_nb_V(9 downto 0), 32);
+                        rdata_data <= RESIZE(int_data_nb_V(10 downto 0), 32);
                     when others =>
                         rdata_data <= (others => '0');
                     end case;
@@ -366,7 +366,7 @@ begin
         if (ACLK'event and ACLK = '1') then
             if (ACLK_EN = '1') then
                 if (w_hs = '1' and waddr = ADDR_DATA_NB_V_DATA_0) then
-                    int_data_nb_V(9 downto 0) <= (UNSIGNED(WDATA(9 downto 0)) and wmask(9 downto 0)) or ((not wmask(9 downto 0)) and int_data_nb_V(9 downto 0));
+                    int_data_nb_V(10 downto 0) <= (UNSIGNED(WDATA(10 downto 0)) and wmask(10 downto 0)) or ((not wmask(10 downto 0)) and int_data_nb_V(10 downto 0));
                 end if;
             end if;
         end if;

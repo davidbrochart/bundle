@@ -52,7 +52,7 @@ end;
 architecture behav of fpga2ddr is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "fpga2ddr,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.840000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=108,HLS_SYN_LUT=112}";
+    "fpga2ddr,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.840000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=111,HLS_SYN_LUT=116}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_st1_fsm_0 : STD_LOGIC_VECTOR (2 downto 0) := "001";
@@ -66,7 +66,7 @@ architecture behav of fpga2ddr is
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
     constant ap_const_lv9_0 : STD_LOGIC_VECTOR (8 downto 0) := "000000000";
     constant ap_const_lv8_7 : STD_LOGIC_VECTOR (7 downto 0) := "00000111";
-    constant ap_const_lv11_7FF : STD_LOGIC_VECTOR (10 downto 0) := "11111111111";
+    constant ap_const_lv12_FFF : STD_LOGIC_VECTOR (11 downto 0) := "111111111111";
     constant ap_const_lv9_1 : STD_LOGIC_VECTOR (8 downto 0) := "000000001";
 
     signal ap_rst_n_inv : STD_LOGIC;
@@ -80,13 +80,13 @@ architecture behav of fpga2ddr is
     signal ap_sig_20 : BOOLEAN;
     signal ap_ready : STD_LOGIC;
     signal mem_i_V : STD_LOGIC_VECTOR (5 downto 0);
-    signal data_nb_V : STD_LOGIC_VECTOR (9 downto 0);
+    signal data_nb_V : STD_LOGIC_VECTOR (10 downto 0);
     signal o_stream_TDATA_blk_n : STD_LOGIC;
     signal ap_sig_cseq_ST_st3_fsm_2 : STD_LOGIC;
     signal ap_sig_50 : BOOLEAN;
-    signal data_nb_V_read_reg_153 : STD_LOGIC_VECTOR (9 downto 0);
-    signal r_V_fu_118_p2 : STD_LOGIC_VECTOR (10 downto 0);
-    signal r_V_reg_158 : STD_LOGIC_VECTOR (10 downto 0);
+    signal data_nb_V_read_reg_153 : STD_LOGIC_VECTOR (10 downto 0);
+    signal r_V_fu_118_p2 : STD_LOGIC_VECTOR (11 downto 0);
+    signal r_V_reg_158 : STD_LOGIC_VECTOR (11 downto 0);
     signal i_V_fu_133_p2 : STD_LOGIC_VECTOR (8 downto 0);
     signal i_V_reg_166 : STD_LOGIC_VECTOR (8 downto 0);
     signal ap_sig_cseq_ST_st2_fsm_1 : STD_LOGIC;
@@ -98,9 +98,9 @@ architecture behav of fpga2ddr is
     signal ap_sig_ioackin_o_stream_TREADY : STD_LOGIC;
     signal tmp_3_fu_139_p1 : STD_LOGIC_VECTOR (63 downto 0);
     signal ap_reg_ioackin_o_stream_TREADY : STD_LOGIC := '0';
-    signal lhs_V_cast_fu_114_p1 : STD_LOGIC_VECTOR (10 downto 0);
-    signal tmp_cast_fu_124_p1 : STD_LOGIC_VECTOR (9 downto 0);
-    signal tmp_6_cast_fu_144_p1 : STD_LOGIC_VECTOR (10 downto 0);
+    signal lhs_V_cast_fu_114_p1 : STD_LOGIC_VECTOR (11 downto 0);
+    signal tmp_cast_fu_124_p1 : STD_LOGIC_VECTOR (10 downto 0);
+    signal tmp_6_cast_fu_144_p1 : STD_LOGIC_VECTOR (11 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (2 downto 0);
 
     component fpga2ddr_ctrl_s_axi IS
@@ -134,7 +134,7 @@ architecture behav of fpga2ddr is
         ap_done : IN STD_LOGIC;
         ap_idle : IN STD_LOGIC;
         mem_i_V : OUT STD_LOGIC_VECTOR (5 downto 0);
-        data_nb_V : OUT STD_LOGIC_VECTOR (9 downto 0) );
+        data_nb_V : OUT STD_LOGIC_VECTOR (10 downto 0) );
     end component;
 
 
@@ -361,7 +361,7 @@ begin
     end process;
 
     i_V_fu_133_p2 <= std_logic_vector(unsigned(p_s_reg_103) + unsigned(ap_const_lv9_1));
-        lhs_V_cast_fu_114_p1 <= std_logic_vector(resize(signed(data_nb_V),11));
+        lhs_V_cast_fu_114_p1 <= std_logic_vector(resize(signed(data_nb_V),12));
 
     mem_V_address0 <= tmp_3_fu_139_p1(10 - 1 downto 0);
 
@@ -401,13 +401,13 @@ begin
         end if; 
     end process;
 
-    r_V_fu_118_p2 <= std_logic_vector(signed(lhs_V_cast_fu_114_p1) + signed(ap_const_lv11_7FF));
+    r_V_fu_118_p2 <= std_logic_vector(signed(lhs_V_cast_fu_114_p1) + signed(ap_const_lv12_FFF));
     r_ostream_last_V_fu_148_p2 <= "1" when (tmp_6_cast_fu_144_p1 = r_V_reg_158) else "0";
     tmp_2_fu_128_p2 <= "1" when (signed(tmp_cast_fu_124_p1) < signed(data_nb_V_read_reg_153)) else "0";
         tmp_3_fu_139_p1 <= std_logic_vector(resize(signed(p_s_reg_103),64));
 
-        tmp_6_cast_fu_144_p1 <= std_logic_vector(resize(signed(p_s_reg_103),11));
+        tmp_6_cast_fu_144_p1 <= std_logic_vector(resize(signed(p_s_reg_103),12));
 
-        tmp_cast_fu_124_p1 <= std_logic_vector(resize(signed(p_s_reg_103),10));
+        tmp_cast_fu_124_p1 <= std_logic_vector(resize(signed(p_s_reg_103),11));
 
 end behav;

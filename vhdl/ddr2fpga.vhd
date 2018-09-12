@@ -53,7 +53,7 @@ end;
 architecture behav of ddr2fpga is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=85,HLS_SYN_LUT=97}";
+    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=87,HLS_SYN_LUT=99}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_st1_fsm_0 : STD_LOGIC_VECTOR (1 downto 0) := "01";
@@ -77,17 +77,17 @@ architecture behav of ddr2fpga is
     signal ap_sig_19 : BOOLEAN;
     signal ap_ready : STD_LOGIC;
     signal mem_i_V : STD_LOGIC_VECTOR (5 downto 0);
-    signal data_nb_V : STD_LOGIC_VECTOR (9 downto 0);
+    signal data_nb_V : STD_LOGIC_VECTOR (10 downto 0);
     signal i_stream_TDATA_blk_n : STD_LOGIC;
     signal ap_sig_cseq_ST_st2_fsm_1 : STD_LOGIC;
     signal ap_sig_50 : BOOLEAN;
     signal tmp_2_fu_99_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal data_nb_V_read_reg_120 : STD_LOGIC_VECTOR (9 downto 0);
+    signal data_nb_V_read_reg_120 : STD_LOGIC_VECTOR (10 downto 0);
     signal i_V_fu_104_p2 : STD_LOGIC_VECTOR (8 downto 0);
     signal ap_sig_102 : BOOLEAN;
     signal p_s_reg_84 : STD_LOGIC_VECTOR (8 downto 0);
     signal tmp_4_fu_115_p1 : STD_LOGIC_VECTOR (63 downto 0);
-    signal tmp_cast_fu_95_p1 : STD_LOGIC_VECTOR (9 downto 0);
+    signal tmp_cast_fu_95_p1 : STD_LOGIC_VECTOR (10 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (1 downto 0);
 
     component ddr2fpga_ctrl_s_axi IS
@@ -121,7 +121,7 @@ architecture behav of ddr2fpga is
         ap_done : IN STD_LOGIC;
         ap_idle : IN STD_LOGIC;
         mem_i_V : OUT STD_LOGIC_VECTOR (5 downto 0);
-        data_nb_V : OUT STD_LOGIC_VECTOR (9 downto 0) );
+        data_nb_V : OUT STD_LOGIC_VECTOR (10 downto 0) );
     end component;
 
 
@@ -336,6 +336,6 @@ begin
     tmp_2_fu_99_p2 <= "1" when (signed(tmp_cast_fu_95_p1) < signed(data_nb_V_read_reg_120)) else "0";
         tmp_4_fu_115_p1 <= std_logic_vector(resize(signed(p_s_reg_84),64));
 
-        tmp_cast_fu_95_p1 <= std_logic_vector(resize(signed(p_s_reg_84),10));
+        tmp_cast_fu_95_p1 <= std_logic_vector(resize(signed(p_s_reg_84),11));
 
 end behav;
