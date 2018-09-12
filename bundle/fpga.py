@@ -58,7 +58,6 @@ class FPGA(Module):
         self.s_ddr2fpga_mem_i = List()
         self.s_ddr2fpga_data_nb = List()
         self.s_ddr2fpga_done = List()
-        self.s_ddr2fpga_ack = List()
         self.s_ddr2fpga_wena = List()
         self.s_ddr2fpga_addr = List()
         self.s_ddr2fpga_din = List()
@@ -67,7 +66,6 @@ class FPGA(Module):
             self.s_ddr2fpga_mem_i[i] = Sig()
             self.s_ddr2fpga_data_nb[i] = Sig()
             self.s_ddr2fpga_done[i] = Sig()
-            self.s_ddr2fpga_ack[i] = Sig()
             self.s_ddr2fpga_wena[i] = Sig()
             self.s_ddr2fpga_addr[i] = Sig()
             self.s_ddr2fpga_din[i] = Sig()
@@ -75,7 +73,6 @@ class FPGA(Module):
             self.u_ddr2fpga[i] = _ = ddr2fpga()
             _.i_data_nb     (self.s_ddr2fpga_data_nb[i])
             _.o_done        (self.s_ddr2fpga_done[i])
-            _.i_ack         (self.s_ddr2fpga_ack[i])
             _.o_mem_wena    (self.s_ddr2fpga_wena[i])
             _.o_mem_addr    (self.s_ddr2fpga_addr[i])
             _.o_mem_din     (self.s_ddr2fpga_din[i])
@@ -84,7 +81,6 @@ class FPGA(Module):
         self.s_fpga2ddr_mem_i = List()
         self.s_fpga2ddr_data_nb = List()
         self.s_fpga2ddr_done = List()
-        self.s_fpga2ddr_ack = List()
         self.s_fpga2ddr_addr = List()
         self.s_fpga2ddr_mem_dout = List()
         self.u_fpga2ddr = List()
@@ -95,19 +91,16 @@ class FPGA(Module):
             self.s_fpga2ddr_mem_i[i] = Sig()
             self.s_fpga2ddr_data_nb[i] = Sig()
             self.s_fpga2ddr_done[i] = Sig()
-            self.s_fpga2ddr_ack[i] = Sig()
 
             self.u_fpga2ddr[i] = _ = fpga2ddr()
             _.i_data_nb  (self.s_fpga2ddr_data_nb[i])
             _.o_done     (self.s_fpga2ddr_done[i])
-            _.i_ack      (self.s_fpga2ddr_ack[i])
             _.o_mem_addr (self.s_fpga2ddr_addr[i])
             _.i_mem_dout (self.s_fpga2ddr_mem_dout[i])
 
         # iterators
         self.u_iter = List()
         self.s_iter_data_nb = List()
-        self.s_iter_ack = List()
         self.s_iter_done = List()
         self.s_iter_raddr = List()
         self.s_iter_waddr = List()
@@ -116,7 +109,6 @@ class FPGA(Module):
         self.s_iter_res_valid = List()
         for i in range(iter_nb):
             self.s_iter_data_nb[i] = Sig()
-            self.s_iter_ack[i] = Sig()
             self.s_iter_done[i] = Sig()
             self.s_iter_raddr[i] = Sig()
             self.s_iter_waddr[i] = Sig()
@@ -126,7 +118,6 @@ class FPGA(Module):
 
             self.u_iter[i] = _ = iterator()
             _.i_data_nb     (self.s_iter_data_nb[i])
-            _.i_ack         (self.s_iter_ack[i])
             _.o_done        (self.s_iter_done[i])
             _.o_raddr       (self.s_iter_raddr[i])
             _.o_waddr       (self.s_iter_waddr[i])
@@ -228,7 +219,6 @@ class FPGA(Module):
         self.s_iter_rmem0_i[iter_i].d = rmem0_i
         self.s_iter_rmem1_i[iter_i].d = rmem1_i
         self.s_iter_wmem_i[iter_i].d = wmem_i
-        self.s_iter_ack[iter_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
 
@@ -240,7 +230,6 @@ class FPGA(Module):
             return True
         if self.s_iter_done[iter_i].d == 1:
             self.s_iter_data_nb[iter_i].d = 0
-            self.s_iter_ack[iter_i].d = 1
             done = True
         else:
             done = False
@@ -253,7 +242,6 @@ class FPGA(Module):
         self.s_ddr2fpga_mem_i[ddr2fpga_i].d = mem_i
         self.s_ddr2fpga_data_nb[ddr2fpga_i].d = data_nb
         self.u_ddr2fpga[ddr2fpga_i].array_ptr = array_ptr
-        self.s_ddr2fpga_ack[ddr2fpga_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
 
@@ -265,7 +253,6 @@ class FPGA(Module):
             return True
         if self.s_ddr2fpga_done[ddr2fpga_i].d == 1:
             self.s_ddr2fpga_data_nb[ddr2fpga_i].d = 0
-            self.s_ddr2fpga_ack[ddr2fpga_i].d = 1
             done = True
         else:
             done = False
@@ -278,7 +265,6 @@ class FPGA(Module):
         self.s_fpga2ddr_mem_i[fpga2ddr_i].d = mem_i
         self.s_fpga2ddr_data_nb[fpga2ddr_i].d = data_nb
         self.u_fpga2ddr[fpga2ddr_i].array_ptr = array_ptr
-        self.s_fpga2ddr_ack[fpga2ddr_i].d = 0
         clkNb = randint(1, self.randmax)
         self.run(clkNb=clkNb, trace=self.trace)
 
@@ -290,7 +276,6 @@ class FPGA(Module):
             return True
         if self.s_fpga2ddr_done[fpga2ddr_i].d == 1:
             self.s_fpga2ddr_data_nb[fpga2ddr_i].d = 0
-            self.s_fpga2ddr_ack[fpga2ddr_i].d = 1
             done = True
         else:
             done = False
