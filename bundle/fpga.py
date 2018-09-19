@@ -1,37 +1,26 @@
 from pyclk import Sig, Reg, In, Out, List, Module
-from random import randint
-import asyncio
 
 from .memory import memory
 from .ddr2fpga import ddr2fpga
 from .fpga2ddr import fpga2ddr
 from .iterator import iterator
 from .functions import func
-from .expression import set_fpga, set_debug
+from .fpga_state import FPGA_state
 
 class FPGA(Module):
 
-    def __init__(self, ddr2fpga_nb, fpga2ddr_nb, iter_nb, mem_nb, mem_depth, add_nb, mul_nb, debug=False):
+    def __init__(self, fpga_config, debug=False):
+        self.func_layout = fpga_config.func_layout
+        self.mem_nb = fpga_config.config['mem_nb']
+        self.ddr2fpga_nb = fpga_config.config['ddr2fpga_nb']
+        self.fpga2ddr_nb = fpga_config.config['fpga2ddr_nb']
+        self.func_nb = fpga_config.config['func_nb']
+        self.iter_nb = fpga_config.config['iter_nb']
+        self.mem_depth = fpga_config.config['mem_depth']
+
         self.cycle_nb = -1
         self.randmax = 2
-        func_nb = add_nb + mul_nb
         self.debug = debug
-        set_debug(debug)
-        self.mem_nb = mem_nb
-        self.ddr2fpga_nb = ddr2fpga_nb
-        self.fpga2ddr_nb = fpga2ddr_nb
-        self.func_nb = func_nb
-        self.iter_nb = iter_nb
-        self.config = {
-                'ddr2fpga_nb': ddr2fpga_nb,
-                'fpga2ddr_nb': fpga2ddr_nb,
-                'iter_nb': iter_nb,
-                'func_nb': func_nb,
-                'add_nb': add_nb,
-                'mul_nb': mul_nb,
-                'mem_nb': mem_nb,
-                'mem_depth': mem_depth
-                }
 
         self.trace = None
 
@@ -41,13 +30,13 @@ class FPGA(Module):
         self.s_mem_addr = List()
         self.s_mem_din = List()
         self.s_mem_dout = List()
-        for i in range(mem_nb):
+        for i in range(self.mem_nb):
             self.s_mem_wena[i] = Sig()
             self.s_mem_addr[i] = Sig()
             self.s_mem_din[i] = Sig()
             self.s_mem_dout[i] = Sig()
 
-            self.u_mem[i] = _ = memory(mem_depth)
+            self.u_mem[i] = _ = memory(self.mem_depth)
             _.i_wena    (self.s_mem_wena[i])
             _.i_addr    (self.s_mem_addr[i])
             _.i_din     (self.s_mem_din[i])
@@ -62,7 +51,7 @@ class FPGA(Module):
         self.s_ddr2fpga_addr = List()
         self.s_ddr2fpga_din = List()
 
-        for i in range(ddr2fpga_nb):
+        for i in range(self.ddr2fpga_nb):
             self.s_ddr2fpga_mem_i[i] = Sig()
             self.s_ddr2fpga_data_nb[i] = Sig()
             self.s_ddr2fpga_done[i] = Sig()
@@ -85,7 +74,7 @@ class FPGA(Module):
         self.s_fpga2ddr_mem_dout = List()
         self.u_fpga2ddr = List()
 
-        for i in range(fpga2ddr_nb):
+        for i in range(self.fpga2ddr_nb):
             self.s_fpga2ddr_mem_dout[i] = Sig()
             self.s_fpga2ddr_addr[i] = Sig()
             self.s_fpga2ddr_mem_i[i] = Sig()
@@ -107,7 +96,7 @@ class FPGA(Module):
         self.s_iter_wena = List()
         self.s_iter_arg_valid = List()
         self.s_iter_res_valid = List()
-        for i in range(iter_nb):
+        for i in range(self.iter_nb):
             self.s_iter_data_nb[i] = Sig()
             self.s_iter_done[i] = Sig()
             self.s_iter_raddr[i] = Sig()
@@ -132,11 +121,8 @@ class FPGA(Module):
         self.s_func_arg_valid = List()
         self.s_func_res = List()
         self.s_func_res_valid = List()
-        func_layout = {'add': add_nb, 'mul': mul_nb}
         i = 0
-        for fname, fnb in func_layout.items():
-            self.config[f'{fname}_i0'] = i
-            self.config[f'{fname}_i1'] = i + fnb
+        for fname, fnb in self.func_layout.items():
             for j in range(fnb):
                 self.s_func_arg0[i] = Sig()
                 self.s_func_arg1[i] = Sig()
@@ -158,14 +144,14 @@ class FPGA(Module):
         self.s_iter_wmem_i = List()
         self.s_iter_func_i = List()
 
-        for i in range(iter_nb):
+        for i in range(self.iter_nb):
             self.s_iter_rmem0_i[i] = Sig()
             self.s_iter_rmem1_i[i] = Sig()
             self.s_iter_wmem_i[i] = Sig()
             self.s_iter_func_i[i] = Sig()
 
-        self.state = FPGA_state(self)
-        set_fpga(self)
+        self.state = FPGA_state(fpga_config)
+        self.config = fpga_config.config
 
     def logic(self):
         # DDR <-> memory
@@ -209,155 +195,3 @@ class FPGA(Module):
 
     def set_trace(self, trace):
         self.trace = trace
-
-    # software interface:
-
-    def op(self, iter_i, func_i, rmem0_i, rmem1_i, wmem_i, data_nb):
-        # operation request
-        self.s_iter_data_nb[iter_i].d = data_nb
-        self.s_iter_func_i[iter_i].d = func_i
-        self.s_iter_rmem0_i[iter_i].d = rmem0_i
-        self.s_iter_rmem1_i[iter_i].d = rmem1_i
-        self.s_iter_wmem_i[iter_i].d = wmem_i
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-
-    def done(self, iter_i):
-        # operation completion check
-        # software is polling, run the FPGA
-        # return True if the operation is done, False otherwise
-        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
-            return True
-        if self.s_iter_done[iter_i].d == 1:
-            self.s_iter_data_nb[iter_i].d = 0
-            done = True
-        else:
-            done = False
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-        return done
-
-    def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
-        # memory write
-        self.s_ddr2fpga_mem_i[ddr2fpga_i].d = mem_i
-        self.s_ddr2fpga_data_nb[ddr2fpga_i].d = data_nb
-        self.u_ddr2fpga[ddr2fpga_i].array_ptr = array_ptr
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-
-    def ddr2fpga_done(self, ddr2fpga_i):
-        # memory copy completion check
-        # software is polling, run the FPGA
-        # return True if the memory copy is done, False otherwise
-        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
-            return True
-        if self.s_ddr2fpga_done[ddr2fpga_i].d == 1:
-            self.s_ddr2fpga_data_nb[ddr2fpga_i].d = 0
-            done = True
-        else:
-            done = False
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-        return done
-
-    def fpga2ddr(self, fpga2ddr_i, mem_i, array_ptr, data_nb):
-        # memory read
-        self.s_fpga2ddr_mem_i[fpga2ddr_i].d = mem_i
-        self.s_fpga2ddr_data_nb[fpga2ddr_i].d = data_nb
-        self.u_fpga2ddr[fpga2ddr_i].array_ptr = array_ptr
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-
-    def fpga2ddr_done(self, fpga2ddr_i):
-        # memory copy completion check
-        # software is polling, run the FPGA
-        # return True if the memory copy is done, False otherwise
-        if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
-            return True
-        if self.s_fpga2ddr_done[fpga2ddr_i].d == 1:
-            self.s_fpga2ddr_data_nb[fpga2ddr_i].d = 0
-            done = True
-        else:
-            done = False
-        clkNb = randint(1, self.randmax)
-        self.run(clkNb=clkNb, trace=self.trace)
-        return done
-
-class FPGA_state(object):
-    def __init__(self, fpga):
-        self.mem_nb = fpga.config['mem_nb']
-        self.ddr2fpga_nb = fpga.config['ddr2fpga_nb']
-        self.fpga2ddr_nb = fpga.config['fpga2ddr_nb']
-        self.iter_nb = fpga.config['iter_nb']
-        self.allfunc_nb = fpga.config['func_nb']
-        self.func_nb = {func: fpga.config[f'{func}_nb'] for func in ['add', 'mul']}
-        self.func_i0 = {func: fpga.config[f'{func}_i0'] for func in ['add', 'mul']}
-        self.func_i1 = {func: fpga.config[f'{func}_i1'] for func in ['add', 'mul']}
-        self.free_mem_nb = self.mem_nb
-        self.free_ddr2fpga_nb = self.ddr2fpga_nb
-        self.free_fpga2ddr_nb = self.fpga2ddr_nb
-        self.free_iter_nb = self.iter_nb
-        self.free_func_nb = {func: self.func_nb[func] for func in ['add', 'mul']}
-        self.mem_busy = [False for i in range(self.mem_nb)]
-        self.ddr2fpga_busy = [False for i in range(self.ddr2fpga_nb)]
-        self.fpga2ddr_busy = [False for i in range(self.fpga2ddr_nb)]
-        self.iter_busy = [False for i in range(self.iter_nb)]
-        self.func_busy = [False for i in range(self.allfunc_nb)]
-        self.func_freed = {func: asyncio.Event() for func in ['add', 'mul']}
-        self.ddr2fpga_freed = asyncio.Event()
-        self.fpga2ddr_freed = asyncio.Event()
-        self.iter_freed = asyncio.Event()
-    def alloc(self, busy, nb, i0=0, i1=None):
-        res = []
-        if i1 is None:
-            i1 = len(busy)
-        i = i0
-        for _ in range(nb):
-            while busy[i]:
-                i += 1
-                if i == i1:
-                    i = i0
-            busy[i] = True
-            res.append(i)
-        if nb == 1:
-            return res[0]
-        return res
-    def mem_alloc(self, nb=1):
-        self.free_mem_nb -= nb
-        return self.alloc(self.mem_busy, nb)
-    def ddr2fpga_alloc(self, nb=1):
-        self.free_ddr2fpga_nb -= nb
-        return self.alloc(self.ddr2fpga_busy, nb)
-    def fpga2ddr_alloc(self, nb=1):
-        self.free_fpga2ddr_nb -= nb
-        return self.alloc(self.fpga2ddr_busy, nb)
-    def iter_alloc(self, nb=1):
-        self.free_iter_nb -= nb
-        return self.alloc(self.iter_busy, nb)
-    def func_alloc(self, func, nb=1):
-        self.free_func_nb[func] -= nb
-        return self.alloc(self.func_busy, nb, i0=self.func_i0[func], i1=self.func_i1[func])
-    def mem_free(self, i):
-        assert self.mem_busy[i]
-        self.free_mem_nb += 1
-        self.mem_busy[i] = False
-    def func_free(self, func, i):
-        assert self.func_busy[i]
-        self.free_func_nb[func] += 1
-        self.func_busy[i] = False
-        self.func_freed[func].set()
-    def ddr2fpga_free(self, i):
-        assert self.ddr2fpga_busy[i]
-        self.free_ddr2fpga_nb += 1
-        self.ddr2fpga_busy[i] = False
-        self.ddr2fpga_freed.set()
-    def fpga2ddr_free(self, i):
-        assert self.fpga2ddr_busy[i]
-        self.free_fpga2ddr_nb += 1
-        self.fpga2ddr_busy[i] = False
-        self.fpga2ddr_freed.set()
-    def iter_free(self, i):
-        assert self.iter_busy[i]
-        self.free_iter_nb += 1
-        self.iter_busy[i] = False
-        self.iter_freed.set()

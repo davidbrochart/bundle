@@ -14,14 +14,7 @@ import random
 import inspect
 import asyncio
 import numpy as np
-from tqdm import tqdm
-from .async_func import ddr2fpga, fpga2ddr, binary_func, _set_debug
-
-debug = False
-def set_debug(d):
-    global debug
-    debug = d
-    _set_debug(d)
+from .async_func import ddr2fpga, fpga2ddr, binary_func
 
 TNUMBER = 0
 TOP1 = 1
@@ -781,11 +774,7 @@ class Parser:
 parser = Parser()
 event_loop = asyncio.get_event_loop()
 
-def set_fpga(f):
-    global fpga
-    fpga = f
-
-def evaluate(expression, toFpga=True):
+def evaluate(expression, fpga=None, toFpga=True, debug=False):
     frame = inspect.currentframe()
     try:
         out_locals = frame.f_back.f_locals
@@ -806,6 +795,7 @@ def evaluate(expression, toFpga=True):
     remaining_tasks = []
     all_done = False
     if not debug:
+        import tqdm
         pbar = tqdm(total=byte_nb)
     while not all_done:
         # this loop is done when all operations have been scheduled
@@ -832,17 +822,17 @@ def evaluate(expression, toFpga=True):
                         ii = task[2:4]
                         for i in ii:
                             if (i < len(var)) and (t[i] is None):
-                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx:], nbytes, mem[i], fpga))
+                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx:], nbytes, mem[i], fpga, debug=debug))
                 for task in tasks:
                     if task[0] == binary_func:
                         func = task[1]
                         i0, i1, i2 = task[2:5]
                         await_tasks = [t[i0], t[i1]]
-                        t.append(asyncio.ensure_future(binary_func(func, nbytes, mem[i0], mem[i1], mem[i2], fpga, await_tasks)))
+                        t.append(asyncio.ensure_future(binary_func(func, nbytes, mem[i0], mem[i1], mem[i2], fpga, await_tasks, debug=debug)))
                 # last task is final operation, get its result memory
                 i = tasks[-1][4]
                 # and copy it back to DDR
-                t.append(asyncio.ensure_future(fpga2ddr(out_array[idx:], nbytes, mem[i], fpga, mem, [t[-1]])))
+                t.append(asyncio.ensure_future(fpga2ddr(out_array[idx:], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
                 remaining_tasks += t
                 byte_nb -= nbytes
                 idx += nbytes // 8
