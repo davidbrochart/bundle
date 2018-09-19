@@ -44,6 +44,7 @@ package bundlepack is
     constant MEM_NB             : integer := {mem_nb};
     constant MEM_BITNB          : integer := {mem_bitnb};
     constant MEM_WIDTH          : integer := {mem_width};
+    constant MEM_DEPTH          : integer := {mem_depth};
     constant MEM_DEPTH_BITNB    : integer := {mem_depth_bitnb};
 end;
 '''

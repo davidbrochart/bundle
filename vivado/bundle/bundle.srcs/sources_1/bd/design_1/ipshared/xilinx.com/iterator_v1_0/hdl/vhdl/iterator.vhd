@@ -160,7 +160,7 @@ begin
 
 
 
-    ap_done <= ap_start;
+    ap_done <= r_done;
     ap_idle <= ap_const_logic_1;
     ap_ready <= ap_start;
 

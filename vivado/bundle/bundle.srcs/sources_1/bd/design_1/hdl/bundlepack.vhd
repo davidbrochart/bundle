@@ -12,6 +12,7 @@ package bundlepack is
     constant MEM_NB             : integer := 3;
     constant MEM_BITNB          : integer := 2;
     constant MEM_WIDTH          : integer := 64;
+    constant MEM_DEPTH          : integer := 1024;
     constant MEM_DEPTH_BITNB    : integer := 10;
 
     type t_mem_nb_1                     is array (0 to MEM_NB - 1)      of std_logic;

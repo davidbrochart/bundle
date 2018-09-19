@@ -9,7 +9,7 @@ from .fpga_state import FPGA_state
 
 class FPGA(Module):
 
-    def __init__(self, fpga_config, debug=False):
+    def __init__(self, fpga_config):
         self.func_layout = fpga_config.func_layout
         self.mem_nb = fpga_config.config['mem_nb']
         self.ddr2fpga_nb = fpga_config.config['ddr2fpga_nb']
@@ -20,7 +20,6 @@ class FPGA(Module):
 
         self.cycle_nb = -1
         self.randmax = 2
-        self.debug = debug
 
         self.trace = None
 
@@ -183,12 +182,6 @@ class FPGA(Module):
                 self.s_func_arg0[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
                 self.s_func_arg1[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
             self.s_iter_res_valid[i].d                           = self.s_func_res_valid[self.s_iter_func_i[i].d].d
-
-    def task(self):
-        if self.debug:
-            while True:
-                yield self.wait(100)
-                print(f'Time is {self.time}')
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb

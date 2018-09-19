@@ -31,7 +31,6 @@ class Simu(FPGA):
 
     def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
         # memory write
-        print('ddr2fpga')
         self.s_ddr2fpga_mem_i[ddr2fpga_i].d = mem_i
         self.s_ddr2fpga_data_nb[ddr2fpga_i].d = data_nb
         self.u_ddr2fpga[ddr2fpga_i].array_ptr = array_ptr

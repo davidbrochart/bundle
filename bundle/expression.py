@@ -795,7 +795,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
     remaining_tasks = []
     all_done = False
     if not debug:
-        import tqdm
+        from tqdm import tqdm
         pbar = tqdm(total=byte_nb)
     while not all_done:
         # this loop is done when all operations have been scheduled

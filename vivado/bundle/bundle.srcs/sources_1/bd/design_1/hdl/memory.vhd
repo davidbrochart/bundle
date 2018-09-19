@@ -14,7 +14,7 @@ entity memory is
 end memory;
 
 architecture rtl of memory is
-    type t_mem is array (MEM_DEPTH_BITNB - 1 downto 0) of std_logic_vector(MEM_WIDTH - 1 downto 0);
+    type t_mem is array (0 to MEM_DEPTH - 1) of std_logic_vector(MEM_WIDTH - 1 downto 0);
     signal mem: t_mem;
 begin
     process (i_clk)
