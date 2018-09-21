@@ -54,7 +54,7 @@ end;
 architecture behav of ddr2fpga is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=84,HLS_SYN_LUT=93}";
+    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=85,HLS_SYN_LUT=95}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_st1_fsm_0 : STD_LOGIC_VECTOR (1 downto 0) := "01";
@@ -64,8 +64,8 @@ architecture behav of ddr2fpga is
     constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
     constant C_S_AXI_DATA_WIDTH : INTEGER range 63 downto 0 := 20;
-    constant ap_const_lv10_0 : STD_LOGIC_VECTOR (9 downto 0) := "0000000000";
-    constant ap_const_lv10_1 : STD_LOGIC_VECTOR (9 downto 0) := "0000000001";
+    constant ap_const_lv11_0 : STD_LOGIC_VECTOR (10 downto 0) := "00000000000";
+    constant ap_const_lv11_1 : STD_LOGIC_VECTOR (10 downto 0) := "00000000001";
 
     signal ap_rst_n_inv : STD_LOGIC;
     signal ap_start : STD_LOGIC;
@@ -82,13 +82,12 @@ architecture behav of ddr2fpga is
     signal i_stream_TDATA_blk_n : STD_LOGIC;
     signal ap_sig_cseq_ST_st2_fsm_1 : STD_LOGIC;
     signal ap_sig_50 : BOOLEAN;
-    signal tmp_2_fu_99_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal data_nb_V_read_reg_120 : STD_LOGIC_VECTOR (10 downto 0);
-    signal i_V_fu_104_p2 : STD_LOGIC_VECTOR (9 downto 0);
-    signal ap_sig_102 : BOOLEAN;
-    signal p_s_reg_84 : STD_LOGIC_VECTOR (9 downto 0);
-    signal tmp_4_fu_115_p1 : STD_LOGIC_VECTOR (63 downto 0);
-    signal tmp_cast_fu_95_p1 : STD_LOGIC_VECTOR (10 downto 0);
+    signal exitcond_fu_95_p2 : STD_LOGIC_VECTOR (0 downto 0);
+    signal data_nb_V_read_reg_116 : STD_LOGIC_VECTOR (10 downto 0);
+    signal i_V_fu_100_p2 : STD_LOGIC_VECTOR (10 downto 0);
+    signal ap_sig_101 : BOOLEAN;
+    signal p_s_reg_84 : STD_LOGIC_VECTOR (10 downto 0);
+    signal tmp_2_fu_111_p1 : STD_LOGIC_VECTOR (63 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (1 downto 0);
 
     component ddr2fpga_ctrl_s_axi IS
@@ -181,10 +180,10 @@ begin
     p_s_reg_84_assign_proc : process (ap_clk)
     begin
         if (ap_clk'event and ap_clk = '1') then
-            if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and not(ap_sig_102))) then 
-                p_s_reg_84 <= i_V_fu_104_p2;
+            if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (exitcond_fu_95_p2 = ap_const_lv1_0) and not(ap_sig_101))) then 
+                p_s_reg_84 <= i_V_fu_100_p2;
             elsif (((ap_const_logic_1 = ap_sig_cseq_ST_st1_fsm_0) and not((ap_start = ap_const_logic_0)))) then 
-                p_s_reg_84 <= ap_const_lv10_0;
+                p_s_reg_84 <= ap_const_lv11_0;
             end if; 
         end if;
     end process;
@@ -192,12 +191,12 @@ begin
     begin
         if (ap_clk'event and ap_clk = '1') then
             if (((ap_const_logic_1 = ap_sig_cseq_ST_st1_fsm_0) and not((ap_start = ap_const_logic_0)))) then
-                data_nb_V_read_reg_120 <= data_nb_V;
+                data_nb_V_read_reg_116 <= data_nb_V;
             end if;
         end if;
     end process;
 
-    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, tmp_2_fu_99_p2, ap_sig_102)
+    ap_NS_fsm_assign_proc : process (ap_start, ap_CS_fsm, exitcond_fu_95_p2, ap_sig_101)
     begin
         case ap_CS_fsm is
             when ap_ST_st1_fsm_0 => 
@@ -207,9 +206,9 @@ begin
                     ap_NS_fsm <= ap_ST_st1_fsm_0;
                 end if;
             when ap_ST_st2_fsm_1 => 
-                if (((tmp_2_fu_99_p2 = ap_const_lv1_0) and not(ap_sig_102))) then
+                if ((not(ap_sig_101) and not((exitcond_fu_95_p2 = ap_const_lv1_0)))) then
                     ap_NS_fsm <= ap_ST_st1_fsm_0;
-                elsif ((not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and not(ap_sig_102))) then
+                elsif (((exitcond_fu_95_p2 = ap_const_lv1_0) and not(ap_sig_101))) then
                     ap_NS_fsm <= ap_ST_st2_fsm_1;
                 else
                     ap_NS_fsm <= ap_ST_st2_fsm_1;
@@ -219,9 +218,9 @@ begin
         end case;
     end process;
 
-    ap_done_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2, ap_sig_102)
+    ap_done_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, exitcond_fu_95_p2, ap_sig_101)
     begin
-        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (tmp_2_fu_99_p2 = ap_const_lv1_0) and not(ap_sig_102))) then 
+        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not(ap_sig_101) and not((exitcond_fu_95_p2 = ap_const_lv1_0)))) then 
             ap_done <= ap_const_logic_1;
         else 
             ap_done <= ap_const_logic_0;
@@ -239,9 +238,9 @@ begin
     end process;
 
 
-    ap_ready_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2, ap_sig_102)
+    ap_ready_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, exitcond_fu_95_p2, ap_sig_101)
     begin
-        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (tmp_2_fu_99_p2 = ap_const_lv1_0) and not(ap_sig_102))) then 
+        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not(ap_sig_101) and not((exitcond_fu_95_p2 = ap_const_lv1_0)))) then 
             ap_ready <= ap_const_logic_1;
         else 
             ap_ready <= ap_const_logic_0;
@@ -255,9 +254,9 @@ begin
     end process;
 
 
-    ap_sig_102_assign_proc : process(i_stream_TVALID, tmp_2_fu_99_p2)
+    ap_sig_101_assign_proc : process(i_stream_TVALID, exitcond_fu_95_p2)
     begin
-                ap_sig_102 <= (not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and (i_stream_TVALID = ap_const_logic_0));
+                ap_sig_101 <= ((exitcond_fu_95_p2 = ap_const_lv1_0) and (i_stream_TVALID = ap_const_logic_0));
     end process;
 
 
@@ -292,11 +291,12 @@ begin
         end if; 
     end process;
 
-    i_V_fu_104_p2 <= std_logic_vector(unsigned(p_s_reg_84) + unsigned(ap_const_lv10_1));
+    exitcond_fu_95_p2 <= "1" when (p_s_reg_84 = data_nb_V_read_reg_116) else "0";
+    i_V_fu_100_p2 <= std_logic_vector(unsigned(p_s_reg_84) + unsigned(ap_const_lv11_1));
 
-    i_stream_TDATA_blk_n_assign_proc : process(i_stream_TVALID, ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2)
+    i_stream_TDATA_blk_n_assign_proc : process(i_stream_TVALID, ap_sig_cseq_ST_st2_fsm_1, exitcond_fu_95_p2)
     begin
-        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not((tmp_2_fu_99_p2 = ap_const_lv1_0)))) then 
+        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (exitcond_fu_95_p2 = ap_const_lv1_0))) then 
             i_stream_TDATA_blk_n <= i_stream_TVALID;
         else 
             i_stream_TDATA_blk_n <= ap_const_logic_1;
@@ -304,40 +304,46 @@ begin
     end process;
 
 
-    i_stream_TREADY_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2, ap_sig_102)
+    i_stream_TREADY_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, exitcond_fu_95_p2, ap_sig_101)
     begin
-        if ((((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and not(ap_sig_102)))) then 
+        if ((((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (exitcond_fu_95_p2 = ap_const_lv1_0) and not(ap_sig_101)))) then 
             i_stream_TREADY <= ap_const_logic_1;
         else 
             i_stream_TREADY <= ap_const_logic_0;
         end if; 
     end process;
 
-    mem_V_address0 <= tmp_4_fu_115_p1(10 - 1 downto 0);
+    mem_V_address0 <= tmp_2_fu_111_p1(10 - 1 downto 0) when data_nb_V /= (data_nb_V'range => '0') else
+                      (others => '0');
 
-    mem_V_ce0_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, ap_sig_102)
+    mem_V_ce0_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, ap_sig_101)
     begin
-        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not(ap_sig_102))) then 
+        if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not(ap_sig_101))) then 
             mem_V_ce0 <= ap_const_logic_1;
         else 
             mem_V_ce0 <= ap_const_logic_0;
         end if; 
     end process;
 
-    mem_V_d0 <= i_stream_TDATA;
+    mem_V_d0 <= i_stream_TDATA when data_nb_V /= (data_nb_V'range => '0') else
+                (others => '0');
 
-    mem_V_we0_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2, ap_sig_102)
+    mem_V_we0_assign_proc : process(ap_sig_cseq_ST_st2_fsm_1, exitcond_fu_95_p2, ap_sig_101)
     begin
-        if ((((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and not(ap_sig_102)))) then 
-            mem_V_we0 <= ap_const_logic_1;
+        if ((((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and (exitcond_fu_95_p2 = ap_const_lv1_0) and not(ap_sig_101)))) then 
+            if data_nb_V /= (data_nb_V'range => '0') then
+                mem_V_we0 <= ap_const_logic_1;
+            else
+                mem_V_we0 <= '0';
+            end if;
         else 
-            mem_V_we0 <= ap_const_logic_0;
+            if data_nb_V /= (data_nb_V'range => '0') then
+                mem_V_we0 <= ap_const_logic_0;
+            else
+                mem_V_we0 <= '0';
+            end if;
         end if; 
     end process;
 
-    tmp_2_fu_99_p2 <= "1" when (signed(tmp_cast_fu_95_p1) < signed(data_nb_V_read_reg_120)) else "0";
-        tmp_4_fu_115_p1 <= std_logic_vector(resize(signed(p_s_reg_84),64));
-
-        tmp_cast_fu_95_p1 <= std_logic_vector(resize(signed(p_s_reg_84),11));
-
+    tmp_2_fu_111_p1 <= std_logic_vector(resize(unsigned(p_s_reg_84),64));
 end behav;

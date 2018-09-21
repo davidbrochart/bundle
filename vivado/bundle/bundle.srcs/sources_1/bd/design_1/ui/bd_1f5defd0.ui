@@ -7,8 +7,8 @@ preplace inst axi_dma_0 -pg 1 -lvl 4 -y 470 -defaultsOSRD
 preplace inst axi_intc_0 -pg 1 -lvl 6 -y 10 -defaultsOSRD
 preplace inst xlconcat_0 -pg 1 -lvl 5 -y 260 -defaultsOSRD
 preplace inst iterator_0 -pg 1 -lvl 3 -y 660 -defaultsOSRD
-preplace inst rst_processing_system7_0_50M -pg 1 -lvl 1 -y 820 -defaultsOSRD
 preplace inst ddr2fpga_0 -pg 1 -lvl 5 -y 80 -defaultsOSRD
+preplace inst rst_processing_system7_0_50M -pg 1 -lvl 1 -y 820 -defaultsOSRD
 preplace inst fpga2ddr_0 -pg 1 -lvl 3 -y 500 -defaultsOSRD
 preplace inst axi_mem_intercon -pg 1 -lvl 5 -y 500 -defaultsOSRD
 preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 540 -defaultsOSRD
