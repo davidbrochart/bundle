@@ -54,7 +54,7 @@ end;
 architecture behav of ddr2fpga is 
     attribute CORE_GENERATION_INFO : STRING;
     attribute CORE_GENERATION_INFO of behav : architecture is
-    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=83,HLS_SYN_LUT=91}";
+    "ddr2fpga,hls_ip_2016_1,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg400-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=2.710000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=0,HLS_SYN_DSP=0,HLS_SYN_FF=84,HLS_SYN_LUT=93}";
     constant ap_const_logic_1 : STD_LOGIC := '1';
     constant ap_const_logic_0 : STD_LOGIC := '0';
     constant ap_ST_st1_fsm_0 : STD_LOGIC_VECTOR (1 downto 0) := "01";
@@ -64,8 +64,8 @@ architecture behav of ddr2fpga is
     constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
     constant C_S_AXI_DATA_WIDTH : INTEGER range 63 downto 0 := 20;
-    constant ap_const_lv9_0 : STD_LOGIC_VECTOR (8 downto 0) := "000000000";
-    constant ap_const_lv9_1 : STD_LOGIC_VECTOR (8 downto 0) := "000000001";
+    constant ap_const_lv10_0 : STD_LOGIC_VECTOR (9 downto 0) := "0000000000";
+    constant ap_const_lv10_1 : STD_LOGIC_VECTOR (9 downto 0) := "0000000001";
 
     signal ap_rst_n_inv : STD_LOGIC;
     signal ap_start : STD_LOGIC;
@@ -84,9 +84,9 @@ architecture behav of ddr2fpga is
     signal ap_sig_50 : BOOLEAN;
     signal tmp_2_fu_99_p2 : STD_LOGIC_VECTOR (0 downto 0);
     signal data_nb_V_read_reg_120 : STD_LOGIC_VECTOR (10 downto 0);
-    signal i_V_fu_104_p2 : STD_LOGIC_VECTOR (8 downto 0);
+    signal i_V_fu_104_p2 : STD_LOGIC_VECTOR (9 downto 0);
     signal ap_sig_102 : BOOLEAN;
-    signal p_s_reg_84 : STD_LOGIC_VECTOR (8 downto 0);
+    signal p_s_reg_84 : STD_LOGIC_VECTOR (9 downto 0);
     signal tmp_4_fu_115_p1 : STD_LOGIC_VECTOR (63 downto 0);
     signal tmp_cast_fu_95_p1 : STD_LOGIC_VECTOR (10 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (1 downto 0);
@@ -184,7 +184,7 @@ begin
             if (((ap_const_logic_1 = ap_sig_cseq_ST_st2_fsm_1) and not((tmp_2_fu_99_p2 = ap_const_lv1_0)) and not(ap_sig_102))) then 
                 p_s_reg_84 <= i_V_fu_104_p2;
             elsif (((ap_const_logic_1 = ap_sig_cseq_ST_st1_fsm_0) and not((ap_start = ap_const_logic_0)))) then 
-                p_s_reg_84 <= ap_const_lv9_0;
+                p_s_reg_84 <= ap_const_lv10_0;
             end if; 
         end if;
     end process;
@@ -292,7 +292,7 @@ begin
         end if; 
     end process;
 
-    i_V_fu_104_p2 <= std_logic_vector(unsigned(p_s_reg_84) + unsigned(ap_const_lv9_1));
+    i_V_fu_104_p2 <= std_logic_vector(unsigned(p_s_reg_84) + unsigned(ap_const_lv10_1));
 
     i_stream_TDATA_blk_n_assign_proc : process(i_stream_TVALID, ap_sig_cseq_ST_st2_fsm_1, tmp_2_fu_99_p2)
     begin

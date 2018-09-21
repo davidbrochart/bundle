@@ -52,7 +52,7 @@ end;
 with open('cpp/bundlepack.h', 'w') as f:
     f.write(bundlepack_h)
 
-with open('../vhdl/bundlepack.vhd', 'w') as f:
+with open('bundle/bundle.srcs/sources_1/bd/design_1/hdl/bundlepack.vhd', 'w') as f:
     f.write(bundlepack_vhd)
 
 call('vivado_hls ddr2fpga/solution1/script.tcl'.split())

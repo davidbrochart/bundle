@@ -13,7 +13,7 @@ void fpga2ddr(STREAM_T &o_stream, ap_int<MEM_BITNB> mem_i, ap_int<MEM_DEPTH_BITN
 #pragma HLS INTERFACE s_axilite port=return bundle=ctrl
 
     AXI_T r_ostream;
-    for (ap_int<MEM_DEPTH_BITNB - 1> i = 0; i < data_nb; i++) {
+    for (ap_int<MEM_DEPTH_BITNB> i = 0; i < data_nb; i++) {
         r_ostream.data = mem[i];
         if(i == data_nb - 1)
             r_ostream.last = 1;

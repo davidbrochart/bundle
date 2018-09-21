@@ -13,7 +13,7 @@ void ddr2fpga(STREAM_T &i_stream, ap_int<MEM_BITNB> mem_i, ap_int<MEM_DEPTH_BITN
 #pragma HLS INTERFACE s_axilite port=return bundle=ctrl
 
     AXI_T r_istream;
-    for (ap_int<MEM_DEPTH_BITNB - 1> i = 0; i < data_nb; i++) {
+    for (ap_int<MEM_DEPTH_BITNB> i = 0; i < data_nb; i++) {
         i_stream >> r_istream;
         mem[i] = r_istream.data;
     }

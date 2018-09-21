@@ -790,7 +790,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
     tasks = e.evaluate(toFpga=True)
     required_mem_nb = len(var) + len(tasks)
     mem_bytes = fpga.config['mem_depth'] * 8 # width 64 bits
-    idx = 0
+    idx0 = 0
     byte_nb = out_array.nbytes # remaining bytes
     remaining_tasks = []
     all_done = False
@@ -812,6 +812,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                 nbytes = byte_nb
             if fpga.state.free_mem_nb >= required_mem_nb:
                 mem = fpga.state.mem_alloc(required_mem_nb)
+                idx1 = idx0 + nbytes // 8
                 # tasks
                 # copy data from DDR to FPGA memory in the order that they are needed,
                 # because limited number of DMAs. But queue them without waiting for computation
@@ -822,7 +823,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                         ii = task[2:4]
                         for i in ii:
                             if (i < len(var)) and (t[i] is None):
-                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx:], nbytes, mem[i], fpga, debug=debug))
+                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx0:idx1], nbytes, mem[i], fpga, debug=debug))
                 for task in tasks:
                     if task[0] == binary_func:
                         func = task[1]
@@ -832,10 +833,10 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                 # last task is final operation, get its result memory
                 i = tasks[-1][4]
                 # and copy it back to DDR
-                t.append(asyncio.ensure_future(fpga2ddr(out_array[idx:], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
+                t.append(asyncio.ensure_future(fpga2ddr(out_array[idx0:idx1], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
                 remaining_tasks += t
                 byte_nb -= nbytes
-                idx += nbytes // 8
+                idx0 = idx1
                 if byte_nb == 0:
                     # all operations have been scheduled
                     done = True
