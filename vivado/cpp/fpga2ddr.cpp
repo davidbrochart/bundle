@@ -15,7 +15,7 @@ void fpga2ddr(STREAM_T &o_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BI
     AXI_T r_ostream;
     for (ap_uint<MEM_DEPTH_BITNB + 1> i = 0; i < data_nb; i++) {
         r_ostream.data = mem[i];
-        if(i == data_nb - 1)
+        if (i == data_nb - 1)
             r_ostream.last = 1;
         else
             r_ostream.last = 0;

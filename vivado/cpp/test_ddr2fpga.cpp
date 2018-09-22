@@ -21,9 +21,9 @@ int main() {
 		r_istream.id   = 0;
 		r_istream.dest = 0;
         if (i == data_nb - 1)
-            r_istream.tlast = 1;
+            r_istream.last = 1;
         else
-            r_istream.tlast = 0;
+            r_istream.last = 0;
 		i_stream << r_istream;
 	}
 
