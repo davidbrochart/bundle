@@ -15,3 +15,4 @@ class FPGA_config(object):
             self.config[f'{fname}_nb'] = fnb
             self.config[f'{fname}_i0'] = i
             self.config[f'{fname}_i1'] = i + fnb
+            i += fnb
