@@ -10,7 +10,10 @@ Right now, the goal is to map this hardware to the [PYNQ-Z1](http://www.pynq.io)
 board. But if you don't have this board and want to see how things work, the
 whole system can be simulated entirely in Python (it is also very convenient for
 exploring new architectures). For that I have created a small Hardware
-Description Language called [PyClk](https://github.com/davidbrochart/pyclk).
+Description Language called [PyClk](https://github.com/davidbrochart/pyclk). It
+can generate this kind of waveforms:
+
+![alt text](examples/waveforms.png)
 
 # Architecture
 
