@@ -19,8 +19,8 @@ void fpga2ddr(STREAM_T &o_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BI
             r_ostream.last = 1;
         else
             r_ostream.last = 0;
-        r_ostream.strb = 0x7;
-        r_ostream.keep = 0x7;
+        r_ostream.strb = 0xFF;
+        r_ostream.keep = 0xFF;
         o_stream << r_ostream;
     }
 }

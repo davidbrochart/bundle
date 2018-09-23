@@ -66,7 +66,7 @@ architecture behav of fpga2ddr is
     constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
     constant ap_const_lv11_0 : STD_LOGIC_VECTOR (10 downto 0) := "00000000000";
-    constant ap_const_lv8_7 : STD_LOGIC_VECTOR (7 downto 0) := "00000111";
+    constant ap_const_lv8_FF : STD_LOGIC_VECTOR (7 downto 0) := "11111111";
     constant ap_const_lv12_FFF : STD_LOGIC_VECTOR (11 downto 0) := "111111111111";
     constant ap_const_lv11_1 : STD_LOGIC_VECTOR (10 downto 0) := "00000000001";
 
@@ -390,9 +390,9 @@ begin
 
     o_stream_TDEST <= ap_const_lv1_0;
     o_stream_TID <= ap_const_lv1_0;
-    o_stream_TKEEP <= ap_const_lv8_7;
+    o_stream_TKEEP <= ap_const_lv8_FF;
     o_stream_TLAST <= r_ostream_last_V_reg_172;
-    o_stream_TSTRB <= ap_const_lv8_7;
+    o_stream_TSTRB <= ap_const_lv8_FF;
     o_stream_TUSER <= ap_const_lv1_0;
 
     o_stream_TVALID_assign_proc : process(ap_sig_cseq_ST_st3_fsm_2, ap_reg_ioackin_o_stream_TREADY)

@@ -47,7 +47,7 @@
 -- DO NOT MODIFY THIS FILE.
 
 -- IP VLNV: xilinx.com:hls:ddr2fpga:1.0
--- IP Revision: 1809211639
+-- IP Revision: 1809232005
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
@@ -142,7 +142,7 @@ ARCHITECTURE design_1_ddr2fpga_0_0_arch OF design_1_ddr2fpga_0_0 IS
   ATTRIBUTE CHECK_LICENSE_TYPE : STRING;
   ATTRIBUTE CHECK_LICENSE_TYPE OF design_1_ddr2fpga_0_0_arch : ARCHITECTURE IS "design_1_ddr2fpga_0_0,ddr2fpga,{}";
   ATTRIBUTE CORE_GENERATION_INFO : STRING;
-  ATTRIBUTE CORE_GENERATION_INFO OF design_1_ddr2fpga_0_0_arch: ARCHITECTURE IS "design_1_ddr2fpga_0_0,ddr2fpga,{x_ipProduct=Vivado 2016.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=ddr2fpga,x_ipVersion=1.0,x_ipCoreRevision=1809211639,x_ipLanguage=VHDL,x_ipSimLanguage=MIXED,C_S_AXI_CTRL_ADDR_WIDTH=5,C_S_AXI_CTRL_DATA_WIDTH=32}";
+  ATTRIBUTE CORE_GENERATION_INFO OF design_1_ddr2fpga_0_0_arch: ARCHITECTURE IS "design_1_ddr2fpga_0_0,ddr2fpga,{x_ipProduct=Vivado 2016.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=ddr2fpga,x_ipVersion=1.0,x_ipCoreRevision=1809232005,x_ipLanguage=VHDL,x_ipSimLanguage=MIXED,C_S_AXI_CTRL_ADDR_WIDTH=5,C_S_AXI_CTRL_DATA_WIDTH=32}";
   ATTRIBUTE X_INTERFACE_INFO : STRING;
   ATTRIBUTE X_INTERFACE_INFO OF s_axi_ctrl_AWADDR: SIGNAL IS "xilinx.com:interface:aximm:1.0 s_axi_ctrl AWADDR";
   ATTRIBUTE X_INTERFACE_INFO OF s_axi_ctrl_AWVALID: SIGNAL IS "xilinx.com:interface:aximm:1.0 s_axi_ctrl AWVALID";
