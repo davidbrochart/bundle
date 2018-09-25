@@ -24,6 +24,7 @@ port (
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_waddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_wena      : out std_logic;
+    o_cena      : out std_logic;
     o_arg_valid : out std_logic;
 
     s_axi_ctrl_AWVALID : IN STD_LOGIC;
@@ -221,6 +222,8 @@ begin
 
     o_raddr     <= r_raddr;
     o_waddr     <= r_waddr;
+    o_cena      <= '1' when (r_state = ITERATING) or (r_state = FINISHING) else
+                   '0';
     o_wena      <= i_res_valid when (r_state = ITERATING) or (r_state = FINISHING) else
                    '0';
     o_arg_valid <= r_arg_valid;

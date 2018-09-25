@@ -21,6 +21,7 @@ package bundlepack is
     type t_fpga2ddr_nb_mem_bitnb        is array (0 to FPGA2DDR_NB - 1) of std_logic_vector(MEM_BITNB - 1 downto 0);
     type t_fpga2ddr_nb_mem_depth_bitnb  is array (0 to FPGA2DDR_NB - 1) of std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     type t_fpga2ddr_nb_mem_width        is array (0 to FPGA2DDR_NB - 1) of std_logic_vector(MEM_WIDTH - 1 downto 0);
+    type t_fpga2ddr_nb_1                is array (0 to FPGA2DDR_NB - 1) of std_logic;
     type t_ddr2fpga_nb_mem_bitnb        is array (0 to DDR2FPGA_NB - 1) of std_logic_vector(MEM_BITNB - 1 downto 0);
     type t_ddr2fpga_nb_1                is array (0 to DDR2FPGA_NB - 1) of std_logic;
     type t_ddr2fpga_nb_mem_depth_bitnb  is array (0 to DDR2FPGA_NB - 1) of std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);

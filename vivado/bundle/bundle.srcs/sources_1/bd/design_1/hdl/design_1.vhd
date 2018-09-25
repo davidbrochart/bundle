@@ -1,7 +1,7 @@
 --Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2016.1 (lin64) Build 1538259 Fri Apr  8 15:45:23 MDT 2016
---Date        : Sun Sep 23 20:14:30 2018
+--Date        : Mon Sep 24 11:41:19 2018
 --Host        : ubuntu running 64-bit Ubuntu 17.04
 --Command     : generate_target design_1.bd
 --Design      : design_1
@@ -3059,7 +3059,7 @@ entity design_1 is
     FIXED_IO_ps_srstb : inout STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=23,numReposBlks=12,numNonXlnxBlks=0,numHierBlks=11,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=3,numHdlrefBlks=0,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=1,synth_mode=Global}";
+  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=22,numReposBlks=11,numNonXlnxBlks=0,numHierBlks=11,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=3,numHdlrefBlks=0,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=2,synth_mode=Global}";
   attribute HW_HANDOFF : string;
   attribute HW_HANDOFF of design_1 : entity is "design_1.hwdef";
 end design_1;
@@ -3068,6 +3068,7 @@ architecture STRUCTURE of design_1 is
     component memory is
         port (
         i_clk       : in  std_logic;
+        i_cena      : in  std_logic;
         i_wena      : in  std_logic;
         i_addr      : in  std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
         i_din       : in  std_logic_vector(MEM_WIDTH - 1 downto 0);
@@ -3290,41 +3291,6 @@ architecture STRUCTURE of design_1 is
     s2mm_introut : out STD_LOGIC
   );
   end component design_1_axi_dma_0_0;
-  component design_1_xlconcat_0_0 is
-  port (
-    In0 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    In1 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    In2 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    In3 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    In4 : in STD_LOGIC_VECTOR ( 0 to 0 );
-    dout : out STD_LOGIC_VECTOR ( 4 downto 0 )
-  );
-  end component design_1_xlconcat_0_0;
-  component design_1_axi_intc_0_0 is
-  port (
-    s_axi_aclk : in STD_LOGIC;
-    s_axi_aresetn : in STD_LOGIC;
-    s_axi_awaddr : in STD_LOGIC_VECTOR ( 8 downto 0 );
-    s_axi_awvalid : in STD_LOGIC;
-    s_axi_awready : out STD_LOGIC;
-    s_axi_wdata : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    s_axi_wstrb : in STD_LOGIC_VECTOR ( 3 downto 0 );
-    s_axi_wvalid : in STD_LOGIC;
-    s_axi_wready : out STD_LOGIC;
-    s_axi_bresp : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    s_axi_bvalid : out STD_LOGIC;
-    s_axi_bready : in STD_LOGIC;
-    s_axi_araddr : in STD_LOGIC_VECTOR ( 8 downto 0 );
-    s_axi_arvalid : in STD_LOGIC;
-    s_axi_arready : out STD_LOGIC;
-    s_axi_rdata : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    s_axi_rresp : out STD_LOGIC_VECTOR ( 1 downto 0 );
-    s_axi_rvalid : out STD_LOGIC;
-    s_axi_rready : in STD_LOGIC;
-    intr : in STD_LOGIC_VECTOR ( 4 downto 0 );
-    irq : out STD_LOGIC
-  );
-  end component design_1_axi_intc_0_0;
   component design_1_ddr2fpga_0_0 is
   port (
     o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
@@ -3411,6 +3377,7 @@ architecture STRUCTURE of design_1 is
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_waddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_wena      : out std_logic;
+    o_cena      : out std_logic;
     o_arg_valid : out std_logic;
 
     s_axi_ctrl_AWADDR : in STD_LOGIC_VECTOR ( 5 downto 0 );
@@ -3435,6 +3402,31 @@ architecture STRUCTURE of design_1 is
     interrupt : out STD_LOGIC
   );
   end component design_1_iterator_0_0;
+  component design_1_axi_intc_0_1 is
+  port (
+    s_axi_aclk : in STD_LOGIC;
+    s_axi_aresetn : in STD_LOGIC;
+    s_axi_awaddr : in STD_LOGIC_VECTOR ( 8 downto 0 );
+    s_axi_awvalid : in STD_LOGIC;
+    s_axi_awready : out STD_LOGIC;
+    s_axi_wdata : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    s_axi_wstrb : in STD_LOGIC_VECTOR ( 3 downto 0 );
+    s_axi_wvalid : in STD_LOGIC;
+    s_axi_wready : out STD_LOGIC;
+    s_axi_bresp : out STD_LOGIC_VECTOR ( 1 downto 0 );
+    s_axi_bvalid : out STD_LOGIC;
+    s_axi_bready : in STD_LOGIC;
+    s_axi_araddr : in STD_LOGIC_VECTOR ( 8 downto 0 );
+    s_axi_arvalid : in STD_LOGIC;
+    s_axi_arready : out STD_LOGIC;
+    s_axi_rdata : out STD_LOGIC_VECTOR ( 31 downto 0 );
+    s_axi_rresp : out STD_LOGIC_VECTOR ( 1 downto 0 );
+    s_axi_rvalid : out STD_LOGIC;
+    s_axi_rready : in STD_LOGIC;
+    intr : in STD_LOGIC_VECTOR ( 0 to 0 );
+    irq : out STD_LOGIC
+  );
+  end component design_1_axi_intc_0_1;
   signal axi_dma_0_M_AXIS_MM2S_TDATA : STD_LOGIC_VECTOR ( 63 downto 0 );
   signal axi_dma_0_M_AXIS_MM2S_TKEEP : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal axi_dma_0_M_AXIS_MM2S_TLAST : STD_LOGIC;
@@ -3469,8 +3461,6 @@ architecture STRUCTURE of design_1 is
   signal axi_dma_0_M_AXI_S2MM_WREADY : STD_LOGIC_VECTOR ( 0 to 0 );
   signal axi_dma_0_M_AXI_S2MM_WSTRB : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal axi_dma_0_M_AXI_S2MM_WVALID : STD_LOGIC;
-  signal axi_dma_0_mm2s_introut : STD_LOGIC;
-  signal axi_dma_0_s2mm_introut : STD_LOGIC;
   signal axi_intc_0_irq : STD_LOGIC;
   signal axi_mem_intercon_M00_AXI_ARADDR : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal axi_mem_intercon_M00_AXI_ARBURST : STD_LOGIC_VECTOR ( 1 downto 0 );
@@ -3510,8 +3500,6 @@ architecture STRUCTURE of design_1 is
   signal axi_mem_intercon_M00_AXI_WREADY : STD_LOGIC;
   signal axi_mem_intercon_M00_AXI_WSTRB : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal axi_mem_intercon_M00_AXI_WVALID : STD_LOGIC;
-  signal ddr2fpga_0_interrupt : STD_LOGIC;
-  signal fpga2ddr_0_interrupt : STD_LOGIC;
   signal fpga2ddr_0_o_stream_TDATA : STD_LOGIC_VECTOR ( 63 downto 0 );
   signal fpga2ddr_0_o_stream_TKEEP : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal fpga2ddr_0_o_stream_TLAST : STD_LOGIC_VECTOR ( 0 to 0 );
@@ -3665,14 +3653,17 @@ architecture STRUCTURE of design_1 is
   signal processing_system7_0_axi_periph_M04_AXI_WVALID : STD_LOGIC;
   signal rst_processing_system7_0_50M_interconnect_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
   signal rst_processing_system7_0_50M_peripheral_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal xlconcat_0_dout : STD_LOGIC_VECTOR ( 4 downto 0 );
+  signal NLW_axi_dma_0_mm2s_introut_UNCONNECTED : STD_LOGIC;
   signal NLW_axi_dma_0_mm2s_prmry_reset_out_n_UNCONNECTED : STD_LOGIC;
+  signal NLW_axi_dma_0_s2mm_introut_UNCONNECTED : STD_LOGIC;
   signal NLW_axi_dma_0_s2mm_prmry_reset_out_n_UNCONNECTED : STD_LOGIC;
+  signal NLW_ddr2fpga_0_interrupt_UNCONNECTED : STD_LOGIC;
   signal NLW_ddr2fpga_0_mem_V_ce0_UNCONNECTED : STD_LOGIC;
   signal NLW_ddr2fpga_0_mem_V_we0_UNCONNECTED : STD_LOGIC;
   signal NLW_ddr2fpga_0_i_stream_TSTRB_UNCONNECTED : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal NLW_ddr2fpga_0_mem_V_address0_UNCONNECTED : STD_LOGIC_VECTOR ( 9 downto 0 );
   signal NLW_ddr2fpga_0_mem_V_d0_UNCONNECTED : STD_LOGIC_VECTOR ( 63 downto 0 );
+  signal NLW_fpga2ddr_0_interrupt_UNCONNECTED : STD_LOGIC;
   signal NLW_fpga2ddr_0_mem_V_ce0_UNCONNECTED : STD_LOGIC;
   signal NLW_fpga2ddr_0_mem_V_address0_UNCONNECTED : STD_LOGIC_VECTOR ( 9 downto 0 );
   signal NLW_fpga2ddr_0_o_stream_TDEST_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
@@ -3689,6 +3680,7 @@ architecture STRUCTURE of design_1 is
   signal NLW_rst_processing_system7_0_50M_bus_struct_reset_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
   signal NLW_rst_processing_system7_0_50M_peripheral_reset_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
 
+  signal s_mem_cena:            t_mem_nb_1;
   signal s_mem_wena:            t_mem_nb_1;
   signal s_mem_addr:            t_mem_nb_mem_depth_bitnb;
   signal s_mem_din:             t_mem_nb_mem_width;
@@ -3696,8 +3688,10 @@ architecture STRUCTURE of design_1 is
   signal s_fpga2ddr_mem_i:      t_fpga2ddr_nb_mem_bitnb;
   signal s_fpga2ddr_addr:       t_fpga2ddr_nb_mem_depth_bitnb;
   signal s_fpga2ddr_mem_dout:   t_fpga2ddr_nb_mem_width;
+  signal s_fpga2ddr_cena:       t_fpga2ddr_nb_1;
   signal s_ddr2fpga_mem_i:      t_ddr2fpga_nb_mem_bitnb;
   signal s_ddr2fpga_wena:       t_ddr2fpga_nb_1;
+  signal s_ddr2fpga_cena:       t_ddr2fpga_nb_1;
   signal s_ddr2fpga_addr:       t_ddr2fpga_nb_mem_depth_bitnb;
   signal s_ddr2fpga_mem_din:    t_ddr2fpga_nb_mem_width;
   signal s_func_arg0:           t_func_nb_mem_width;
@@ -3712,6 +3706,7 @@ architecture STRUCTURE of design_1 is
   signal s_iter_raddr:          t_iter_nb_mem_depth_bitnb;
   signal s_iter_waddr:          t_iter_nb_mem_depth_bitnb;
   signal s_iter_wena:           t_iter_nb_1;
+  signal s_iter_cena:           t_iter_nb_1;
   signal s_iter_arg_valid:      t_iter_nb_1;
   signal s_iter_res_valid:      t_iter_nb_1;
 begin
@@ -3754,9 +3749,9 @@ axi_dma_0: component design_1_axi_dma_0_0
       m_axis_mm2s_tlast => axi_dma_0_M_AXIS_MM2S_TLAST,
       m_axis_mm2s_tready => axi_dma_0_M_AXIS_MM2S_TREADY,
       m_axis_mm2s_tvalid => axi_dma_0_M_AXIS_MM2S_TVALID,
-      mm2s_introut => axi_dma_0_mm2s_introut,
+      mm2s_introut => NLW_axi_dma_0_mm2s_introut_UNCONNECTED,
       mm2s_prmry_reset_out_n => NLW_axi_dma_0_mm2s_prmry_reset_out_n_UNCONNECTED,
-      s2mm_introut => axi_dma_0_s2mm_introut,
+      s2mm_introut => NLW_axi_dma_0_s2mm_introut_UNCONNECTED,
       s2mm_prmry_reset_out_n => NLW_axi_dma_0_s2mm_prmry_reset_out_n_UNCONNECTED,
       s_axi_lite_aclk => processing_system7_0_FCLK_CLK0,
       s_axi_lite_araddr(9 downto 0) => processing_system7_0_axi_periph_M01_AXI_ARADDR(9 downto 0),
@@ -3781,9 +3776,9 @@ axi_dma_0: component design_1_axi_dma_0_0
       s_axis_s2mm_tready => fpga2ddr_0_o_stream_TREADY,
       s_axis_s2mm_tvalid => fpga2ddr_0_o_stream_TVALID
     );
-axi_intc_0: component design_1_axi_intc_0_0
+axi_intc_0: component design_1_axi_intc_0_1
      port map (
-      intr(4 downto 0) => xlconcat_0_dout(4 downto 0),
+      intr(0) => iterator_0_interrupt,
       irq => axi_intc_0_irq,
       s_axi_aclk => processing_system7_0_FCLK_CLK0,
       s_axi_araddr(8 downto 0) => processing_system7_0_axi_periph_M04_AXI_ARADDR(8 downto 0),
@@ -3897,9 +3892,9 @@ ddr2fpga_0: component design_1_ddr2fpga_0_0
       i_stream_TSTRB(7 downto 0) => NLW_ddr2fpga_0_i_stream_TSTRB_UNCONNECTED(7 downto 0),
       i_stream_TUSER(0) => '0',
       i_stream_TVALID => axi_dma_0_M_AXIS_MM2S_TVALID,
-      interrupt => ddr2fpga_0_interrupt,
+      interrupt => NLW_ddr2fpga_0_interrupt_UNCONNECTED,
       mem_V_address0(9 downto 0) => s_ddr2fpga_addr(0),
-      mem_V_ce0 => NLW_ddr2fpga_0_mem_V_ce0_UNCONNECTED,
+      mem_V_ce0 => s_ddr2fpga_cena(0),
       mem_V_d0(63 downto 0) => s_ddr2fpga_mem_din(0),
       mem_V_we0 => s_ddr2fpga_wena(0),
       s_axi_ctrl_ARADDR(4 downto 0) => processing_system7_0_axi_periph_M00_AXI_ARADDR(4 downto 0),
@@ -3925,9 +3920,9 @@ fpga2ddr_0: component design_1_fpga2ddr_0_0
       o_mem_i => s_fpga2ddr_mem_i(0),
       ap_clk => processing_system7_0_FCLK_CLK0,
       ap_rst_n => rst_processing_system7_0_50M_peripheral_aresetn(0),
-      interrupt => fpga2ddr_0_interrupt,
+      interrupt => NLW_fpga2ddr_0_interrupt_UNCONNECTED,
       mem_V_address0(9 downto 0) => s_fpga2ddr_addr(0),
-      mem_V_ce0 => NLW_fpga2ddr_0_mem_V_ce0_UNCONNECTED,
+      mem_V_ce0 => s_fpga2ddr_cena(0),
       mem_V_q0(63 downto 0) => s_fpga2ddr_mem_dout(0),
       o_stream_TDATA(63 downto 0) => fpga2ddr_0_o_stream_TDATA(63 downto 0),
       o_stream_TDEST(0) => NLW_fpga2ddr_0_o_stream_TDEST_UNCONNECTED(0),
@@ -3961,6 +3956,7 @@ iterator_0: component design_1_iterator_0_0
       o_raddr     => s_iter_raddr(0),
       o_waddr     => s_iter_waddr(0),
       o_wena      => s_iter_wena(0),
+      o_cena      => s_iter_cena(0),
       o_arg_valid => s_iter_arg_valid(0),
       i_res_valid => s_iter_res_valid(0),
       o_func_i => s_iter_func_i(0),
@@ -4257,20 +4253,12 @@ rst_processing_system7_0_50M: component design_1_rst_processing_system7_0_50M_0
       peripheral_reset(0) => NLW_rst_processing_system7_0_50M_peripheral_reset_UNCONNECTED(0),
       slowest_sync_clk => processing_system7_0_FCLK_CLK0
     );
-xlconcat_0: component design_1_xlconcat_0_0
-     port map (
-      In0(0) => fpga2ddr_0_interrupt,
-      In1(0) => ddr2fpga_0_interrupt,
-      In2(0) => axi_dma_0_mm2s_introut,
-      In3(0) => axi_dma_0_s2mm_introut,
-      In4(0) => iterator_0_interrupt,
-      dout(4 downto 0) => xlconcat_0_dout(4 downto 0)
-    );
     GEN_MEM_NB: for I in 0 to MEM_NB - 1 generate
         u_mem: memory
         port map (
             i_clk   => processing_system7_0_FCLK_CLK0,
             i_addr  => s_mem_addr(I),
+            i_cena  => s_mem_cena(I),
             i_wena  => s_mem_wena(I),
             i_din   => s_mem_din(I),
             o_dout  => s_mem_dout(I)
@@ -4300,18 +4288,21 @@ xlconcat_0: component design_1_xlconcat_0_0
             );
         end generate GEN_MUL_NB;
     end generate GEN_FUNC_NB;
-    process(s_mem_dout, s_fpga2ddr_mem_i, s_fpga2ddr_addr, s_ddr2fpga_mem_i, s_ddr2fpga_wena, s_ddr2fpga_addr, s_ddr2fpga_mem_din, s_func_arg_valid, s_func_arg0, s_func_arg1, s_func_res_valid, s_iter_raddr, s_iter_waddr, s_iter_wena, s_iter_rmem0_i, s_iter_rmem1_i, s_iter_wmem_i, s_func_res, s_iter_func_i, s_iter_arg_valid)
+    process(s_mem_dout, s_fpga2ddr_mem_i, s_fpga2ddr_addr, s_fpga2ddr_cena, s_ddr2fpga_mem_i, s_ddr2fpga_wena, s_ddr2fpga_cena, s_ddr2fpga_addr, s_ddr2fpga_mem_din, s_func_arg_valid, s_func_arg0, s_func_arg1, s_func_res_valid, s_iter_raddr, s_iter_waddr, s_iter_wena, s_iter_cena, s_iter_rmem0_i, s_iter_rmem1_i, s_iter_wmem_i, s_func_res, s_iter_func_i, s_iter_arg_valid)
     begin
         for I in 0 to MEM_NB - 1 loop
             s_mem_addr(I)   <= (others => '0');
             s_mem_din(I)    <= (others => '0');
             s_mem_wena(I)   <= '0';
+            s_mem_cena(I)   <= '0';
         end loop;
         for I in 0 to FPGA2DDR_NB - 1 loop
             s_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) <= s_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_addr(I);
+            s_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) <= s_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_cena(I);
             s_fpga2ddr_mem_dout(I) <= s_mem_dout(conv_integer(unsigned(s_fpga2ddr_mem_i(I))));
         end loop;
         for I in 0 to DDR2FPGA_NB - 1 loop
+            s_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_cena(I);
             s_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_wena(I);
             s_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_addr(I);
             s_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  <= s_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  or s_ddr2fpga_mem_din(I);
@@ -4326,6 +4317,9 @@ xlconcat_0: component design_1_xlconcat_0_0
             s_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))       <= s_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_raddr(I);
             s_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_waddr(I);
             s_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_wena(I);
+            s_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_cena(I);
+            s_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))       <= s_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))      or s_iter_cena(I);
+            s_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))       <= s_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_cena(I);
             s_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))         <= s_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))        or s_func_res(conv_integer(unsigned(s_iter_func_i(I))));
             s_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I))))  <= s_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I)))) or s_iter_arg_valid(I);
             if s_iter_arg_valid(I) = '1' then

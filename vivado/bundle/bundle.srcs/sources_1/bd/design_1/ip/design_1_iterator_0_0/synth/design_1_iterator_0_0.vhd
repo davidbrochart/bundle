@@ -47,7 +47,7 @@
 -- DO NOT MODIFY THIS FILE.
 
 -- IP VLNV: xilinx.com:hls:iterator:1.0
--- IP Revision: 1809232008
+-- IP Revision: 1809241122
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
@@ -65,6 +65,7 @@ ENTITY design_1_iterator_0_0 IS
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_waddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_wena      : out std_logic;
+    o_cena      : out std_logic;
     o_arg_valid : out std_logic;
 
     s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
@@ -108,6 +109,7 @@ ARCHITECTURE design_1_iterator_0_0_arch OF design_1_iterator_0_0 IS
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_waddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
     o_wena      : out std_logic;
+    o_cena      : out std_logic;
     o_arg_valid : out std_logic;
       s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
       s_axi_ctrl_AWVALID : IN STD_LOGIC;
@@ -136,7 +138,7 @@ ARCHITECTURE design_1_iterator_0_0_arch OF design_1_iterator_0_0 IS
   ATTRIBUTE CHECK_LICENSE_TYPE : STRING;
   ATTRIBUTE CHECK_LICENSE_TYPE OF design_1_iterator_0_0_arch : ARCHITECTURE IS "design_1_iterator_0_0,iterator,{}";
   ATTRIBUTE CORE_GENERATION_INFO : STRING;
-  ATTRIBUTE CORE_GENERATION_INFO OF design_1_iterator_0_0_arch: ARCHITECTURE IS "design_1_iterator_0_0,iterator,{x_ipProduct=Vivado 2016.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=iterator,x_ipVersion=1.0,x_ipCoreRevision=1809232008,x_ipLanguage=VHDL,x_ipSimLanguage=MIXED,C_S_AXI_CTRL_ADDR_WIDTH=6,C_S_AXI_CTRL_DATA_WIDTH=32}";
+  ATTRIBUTE CORE_GENERATION_INFO OF design_1_iterator_0_0_arch: ARCHITECTURE IS "design_1_iterator_0_0,iterator,{x_ipProduct=Vivado 2016.1,x_ipVendor=xilinx.com,x_ipLibrary=hls,x_ipName=iterator,x_ipVersion=1.0,x_ipCoreRevision=1809241122,x_ipLanguage=VHDL,x_ipSimLanguage=MIXED,C_S_AXI_CTRL_ADDR_WIDTH=6,C_S_AXI_CTRL_DATA_WIDTH=32}";
   ATTRIBUTE X_INTERFACE_INFO : STRING;
   ATTRIBUTE X_INTERFACE_INFO OF s_axi_ctrl_AWADDR: SIGNAL IS "xilinx.com:interface:aximm:1.0 s_axi_ctrl AWADDR";
   ATTRIBUTE X_INTERFACE_INFO OF s_axi_ctrl_AWVALID: SIGNAL IS "xilinx.com:interface:aximm:1.0 s_axi_ctrl AWVALID";
@@ -174,6 +176,7 @@ BEGIN
       o_raddr     => o_raddr    ,
       o_waddr     => o_waddr    ,
       o_wena      => o_wena     ,
+      o_cena      => o_cena     ,
       o_arg_valid => o_arg_valid,
 
       s_axi_ctrl_AWADDR => s_axi_ctrl_AWADDR,

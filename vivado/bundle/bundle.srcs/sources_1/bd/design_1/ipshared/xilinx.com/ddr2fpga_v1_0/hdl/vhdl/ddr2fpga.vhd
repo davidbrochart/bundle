@@ -337,11 +337,7 @@ begin
                 mem_V_we0 <= '0';
             end if;
         else 
-            if data_nb_V /= (data_nb_V'range => '0') then
-                mem_V_we0 <= ap_const_logic_0;
-            else
-                mem_V_we0 <= '0';
-            end if;
+            mem_V_we0 <= ap_const_logic_0;
         end if; 
     end process;
 
