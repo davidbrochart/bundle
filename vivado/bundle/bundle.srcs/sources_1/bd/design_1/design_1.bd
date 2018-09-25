@@ -725,14 +725,6 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>xlconcat_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="xlconcat" spirit:vendor="xilinx.com" spirit:version="2.1"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconcat_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="NUM_PORTS">5</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
         <spirit:instanceName>axi_mem_intercon</spirit:instanceName>
         <spirit:componentRef spirit:library="BlockDiagram/design_1_imp" spirit:name="axi_mem_intercon" spirit:vendor="xilinx.com" spirit:version="1.00.a"/>
         <spirit:configurableElementValues>
@@ -740,14 +732,6 @@
           <spirit:configurableElementValue spirit:referenceId="NUM_SI">2</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="NUM_MI">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="appcore">xilinx.com:ip:axi_interconnect:2.1</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>axi_intc_0</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="axi_intc" spirit:vendor="xilinx.com" spirit:version="4.1"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_axi_intc_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_IRQ_CONNECTION">0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
@@ -769,6 +753,22 @@
         <spirit:componentRef spirit:library="hls" spirit:name="iterator" spirit:vendor="xilinx.com" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_iterator_0_0</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>axi_intc_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="axi_intc" spirit:vendor="xilinx.com" spirit:version="4.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_axi_intc_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_IRQ_CONNECTION">1</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>xlconcat_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconcat" spirit:vendor="xilinx.com" spirit:version="2.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">design_1_xlconcat_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="NUM_PORTS">3</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -839,7 +839,9 @@
         <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="m_axi_mm2s_aclk"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="S_AXI_HP0_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="m_axi_s2mm_aclk"/>
-        <spirit:internalPortReference spirit:componentRef="axi_intc_0" spirit:portRef="s_axi_aclk"/>
+        <spirit:internalPortReference spirit:componentRef="ddr2fpga_0" spirit:portRef="ap_clk"/>
+        <spirit:internalPortReference spirit:componentRef="fpga2ddr_0" spirit:portRef="ap_clk"/>
+        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="ap_clk"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ACLK"/>
@@ -851,9 +853,7 @@
         <spirit:internalPortReference spirit:componentRef="axi_mem_intercon" spirit:portRef="S01_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M03_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M04_ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="ddr2fpga_0" spirit:portRef="ap_clk"/>
-        <spirit:internalPortReference spirit:componentRef="fpga2ddr_0" spirit:portRef="ap_clk"/>
-        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="ap_clk"/>
+        <spirit:internalPortReference spirit:componentRef="axi_intc_0" spirit:portRef="s_axi_aclk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>processing_system7_0_FCLK_RESET0_N</spirit:name>
@@ -864,7 +864,9 @@
         <spirit:name>rst_processing_system7_0_50M_peripheral_aresetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rst_processing_system7_0_50M" spirit:portRef="peripheral_aresetn"/>
         <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="axi_resetn"/>
-        <spirit:internalPortReference spirit:componentRef="axi_intc_0" spirit:portRef="s_axi_aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="ddr2fpga_0" spirit:portRef="ap_rst_n"/>
+        <spirit:internalPortReference spirit:componentRef="fpga2ddr_0" spirit:portRef="ap_rst_n"/>
+        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="ap_rst_n"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M01_ARESETN"/>
@@ -874,40 +876,13 @@
         <spirit:internalPortReference spirit:componentRef="axi_mem_intercon" spirit:portRef="S01_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M03_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M04_ARESETN"/>
-        <spirit:internalPortReference spirit:componentRef="ddr2fpga_0" spirit:portRef="ap_rst_n"/>
-        <spirit:internalPortReference spirit:componentRef="fpga2ddr_0" spirit:portRef="ap_rst_n"/>
-        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="ap_rst_n"/>
+        <spirit:internalPortReference spirit:componentRef="axi_intc_0" spirit:portRef="s_axi_aresetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rst_processing_system7_0_50M_interconnect_aresetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rst_processing_system7_0_50M" spirit:portRef="interconnect_aresetn"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="axi_mem_intercon" spirit:portRef="ARESETN"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>fpga2ddr_0_interrupt</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="fpga2ddr_0" spirit:portRef="interrupt"/>
-        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In0"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>ddr2fpga_0_interrupt</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="ddr2fpga_0" spirit:portRef="interrupt"/>
-        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In1"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>axi_dma_0_mm2s_introut</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="mm2s_introut"/>
-        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In2"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>axi_dma_0_s2mm_introut</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="s2mm_introut"/>
-        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In3"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
-        <spirit:name>iterator_0_interrupt</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="interrupt"/>
-        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In4"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconcat_0_dout</spirit:name>
@@ -918,6 +893,21 @@
         <spirit:name>axi_intc_0_irq</spirit:name>
         <spirit:internalPortReference spirit:componentRef="axi_intc_0" spirit:portRef="irq"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="IRQ_F2P"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>axi_dma_0_mm2s_introut</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="mm2s_introut"/>
+        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In0"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>axi_dma_0_s2mm_introut</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="axi_dma_0" spirit:portRef="s2mm_introut"/>
+        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In1"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>iterator_0_interrupt</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="iterator_0" spirit:portRef="interrupt"/>
+        <spirit:internalPortReference spirit:componentRef="xlconcat_0" spirit:portRef="In2"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -3840,12 +3830,6 @@
             <spirit:range>64K</spirit:range>
           </spirit:segment>
           <spirit:segment>
-            <spirit:name>SEG_axi_intc_0_Reg</spirit:name>
-            <spirit:displayName>/axi_intc_0/s_axi/Reg</spirit:displayName>
-            <spirit:addressOffset>0x41800000</spirit:addressOffset>
-            <spirit:range>64K</spirit:range>
-          </spirit:segment>
-          <spirit:segment>
             <spirit:name>SEG_ddr2fpga_0_Reg</spirit:name>
             <spirit:displayName>/ddr2fpga_0/s_axi_ctrl/Reg</spirit:displayName>
             <spirit:addressOffset>0x43C00000</spirit:addressOffset>
@@ -3861,6 +3845,12 @@
             <spirit:name>SEG_iterator_0_Reg</spirit:name>
             <spirit:displayName>/iterator_0/s_axi_ctrl/Reg</spirit:displayName>
             <spirit:addressOffset>0x43C20000</spirit:addressOffset>
+            <spirit:range>64K</spirit:range>
+          </spirit:segment>
+          <spirit:segment>
+            <spirit:name>SEG_axi_intc_0_Reg</spirit:name>
+            <spirit:displayName>/axi_intc_0/s_axi/Reg</spirit:displayName>
+            <spirit:addressOffset>0x41800000</spirit:addressOffset>
             <spirit:range>64K</spirit:range>
           </spirit:segment>
         </spirit:segments>

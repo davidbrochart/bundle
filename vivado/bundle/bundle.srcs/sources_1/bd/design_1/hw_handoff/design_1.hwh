@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sun Sep 23 20:14:53 2018" VIVADOVERSION="2016.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Sep 25 23:54:27 2018" VIVADOVERSION="2016.1">
 
   <SYSTEMINFO ARCH="zynq" BOARD="www.digilentinc.com:pynq-z1:part0:1.0" DEVICE="7z020" NAME="design_1" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -1234,12 +1234,12 @@
         </PORT>
         <PORT DIR="O" NAME="mm2s_introut" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="axi_dma_0_mm2s_introut">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In2"/>
+            <CONNECTION INSTANCE="xlconcat_0" PORT="In0"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="s2mm_introut" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="axi_dma_0_s2mm_introut">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In3"/>
+            <CONNECTION INSTANCE="xlconcat_0" PORT="In1"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -1432,7 +1432,7 @@
         <PERIPHERAL INSTANCE="ddr2fpga_0"/>
       </PERIPHERALS>
     </MODULE>
-    <MODULE FULLNAME="/axi_intc_0" HWVERSION="4.1" INSTANCE="axi_intc_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="INTERRUPT_CNTLR" MODTYPE="axi_intc" VLNV="xilinx.com:ip:axi_intc:4.1">
+    <MODULE FULLNAME="/axi_intc_0" HWVERSION="4.1" INSTANCE="axi_intc_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="axi_intc" VLNV="xilinx.com:ip:axi_intc:4.1">
       <DOCUMENTS>
         <DOCUMENT SOURCE="http://www.xilinx.com/cgi-bin/docs/ipdoc?c=axi_intc;v=v4_1;d=pg099-axi-intc.pdf"/>
       </DOCUMENTS>
@@ -1441,12 +1441,12 @@
         <PARAMETER NAME="C_INSTANCE" VALUE="axi_intc_inst"/>
         <PARAMETER NAME="C_S_AXI_ADDR_WIDTH" VALUE="9"/>
         <PARAMETER NAME="C_S_AXI_DATA_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_NUM_INTR_INPUTS" VALUE="5"/>
+        <PARAMETER NAME="C_NUM_INTR_INPUTS" VALUE="3"/>
         <PARAMETER NAME="C_NUM_SW_INTR" VALUE="0"/>
-        <PARAMETER NAME="C_KIND_OF_INTR" VALUE="0xffffffe0"/>
+        <PARAMETER NAME="C_KIND_OF_INTR" VALUE="0xfffffff8"/>
         <PARAMETER NAME="C_KIND_OF_EDGE" VALUE="0xffffffff"/>
         <PARAMETER NAME="C_KIND_OF_LVL" VALUE="0xffffffff"/>
-        <PARAMETER NAME="C_ASYNC_INTR" VALUE="0xFFFFFFE0"/>
+        <PARAMETER NAME="C_ASYNC_INTR" VALUE="0xFFFFFFF8"/>
         <PARAMETER NAME="C_NUM_SYNC_FF" VALUE="2"/>
         <PARAMETER NAME="C_IVAR_RESET_VALUE" VALUE="0x00000010"/>
         <PARAMETER NAME="C_ENABLE_ASYNC" VALUE="0"/>
@@ -1467,9 +1467,8 @@
         <PARAMETER NAME="Sense_of_IRQ_Edge_Type" VALUE="Rising"/>
         <PARAMETER NAME="C_S_AXI_ACLK_FREQ_MHZ" VALUE="100.0"/>
         <PARAMETER NAME="C_PROCESSOR_CLK_FREQ_MHZ" VALUE="100.0"/>
-        <PARAMETER NAME="C_IRQ_CONNECTION" VALUE="0"/>
+        <PARAMETER NAME="C_IRQ_CONNECTION" VALUE="1"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
-        <PARAMETER NAME="EDK_SPECIAL" VALUE="INTR_CTRL"/>
         <PARAMETER NAME="C_BASEADDR" VALUE="0x41800000"/>
         <PARAMETER NAME="C_HIGHADDR" VALUE="0x4180FFFF"/>
       </PARAMETERS>
@@ -1569,7 +1568,7 @@
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M04_AXI_rready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="4" NAME="intr" RIGHT="0" SENSITIVITY="LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="xlconcat_0_dout">
+        <PORT DIR="I" LEFT="2" NAME="intr" RIGHT="0" SENSITIVITY="LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="xlconcat_0_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="xlconcat_0" PORT="dout"/>
           </CONNECTIONS>
@@ -1626,13 +1625,6 @@
             <PORTMAP LOGICAL="WREADY" PHYSICAL="s_axi_wready"/>
             <PORTMAP LOGICAL="WSTRB" PHYSICAL="s_axi_wstrb"/>
             <PORTMAP LOGICAL="WVALID" PHYSICAL="s_axi_wvalid"/>
-          </PORTMAPS>
-        </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="__NOC__" NAME="interrupt" TYPE="INITIATOR" VLNV="xilinx.com:interface:mbinterrupt:1.0">
-          <PARAMETER NAME="SENSITIVITY" VALUE="LEVEL_HIGH"/>
-          <PARAMETER NAME="LOW_LATENCY" VALUE="0"/>
-          <PORTMAPS>
-            <PORTMAP LOGICAL="INTERRUPT" PHYSICAL="irq"/>
           </PORTMAPS>
         </BUSINTERFACE>
       </BUSINTERFACES>
@@ -2781,11 +2773,7 @@
             <CONNECTION INSTANCE="rst_processing_system7_0_50M" PORT="peripheral_aresetn"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="interrupt" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="ddr2fpga_0_interrupt">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In1"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="interrupt" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT"/>
         <PORT DIR="I" NAME="i_stream_TVALID" SIGIS="undef" SIGNAME="axi_dma_0_m_axis_mm2s_tvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_dma_0" PORT="m_axis_mm2s_tvalid"/>
@@ -3257,11 +3245,7 @@
             <CONNECTION INSTANCE="rst_processing_system7_0_50M" PORT="peripheral_aresetn"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="interrupt" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="fpga2ddr_0_interrupt">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In0"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT DIR="O" NAME="interrupt" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT"/>
         <PORT DIR="O" NAME="o_stream_TVALID" SIGIS="undef" SIGNAME="axi_dma_0_s_axis_s2mm_tvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_dma_0" PORT="s_axis_s2mm_tvalid"/>
@@ -3821,7 +3805,7 @@
         </PORT>
         <PORT DIR="O" NAME="interrupt" SENSITIVITY="LEVEL_HIGH" SIGIS="INTERRUPT" SIGNAME="iterator_0_interrupt">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="xlconcat_0" PORT="In4"/>
+            <CONNECTION INSTANCE="xlconcat_0" PORT="In2"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -5220,7 +5204,9 @@
             <CONNECTION INSTANCE="axi_dma_0" PORT="m_axi_mm2s_aclk"/>
             <CONNECTION INSTANCE="processing_system7_0" PORT="S_AXI_HP0_ACLK"/>
             <CONNECTION INSTANCE="axi_dma_0" PORT="m_axi_s2mm_aclk"/>
-            <CONNECTION INSTANCE="axi_intc_0" PORT="s_axi_aclk"/>
+            <CONNECTION INSTANCE="ddr2fpga_0" PORT="ap_clk"/>
+            <CONNECTION INSTANCE="fpga2ddr_0" PORT="ap_clk"/>
+            <CONNECTION INSTANCE="iterator_0" PORT="ap_clk"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="S00_ACLK"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="ACLK"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M00_ACLK"/>
@@ -5232,9 +5218,7 @@
             <CONNECTION INSTANCE="axi_mem_intercon" PORT="S01_ACLK"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M03_ACLK"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M04_ACLK"/>
-            <CONNECTION INSTANCE="ddr2fpga_0" PORT="ap_clk"/>
-            <CONNECTION INSTANCE="fpga2ddr_0" PORT="ap_clk"/>
-            <CONNECTION INSTANCE="iterator_0" PORT="ap_clk"/>
+            <CONNECTION INSTANCE="axi_intc_0" PORT="s_axi_aclk"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="FCLK_RESET0_N" SIGIS="rst" SIGNAME="processing_system7_0_FCLK_RESET0_N">
@@ -6674,7 +6658,9 @@
         <PORT DIR="O" LEFT="0" NAME="peripheral_aresetn" RIGHT="0" SIGIS="rst" SIGNAME="rst_processing_system7_0_50M_peripheral_aresetn">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_dma_0" PORT="axi_resetn"/>
-            <CONNECTION INSTANCE="axi_intc_0" PORT="s_axi_aresetn"/>
+            <CONNECTION INSTANCE="ddr2fpga_0" PORT="ap_rst_n"/>
+            <CONNECTION INSTANCE="fpga2ddr_0" PORT="ap_rst_n"/>
+            <CONNECTION INSTANCE="iterator_0" PORT="ap_rst_n"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="S00_ARESETN"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M00_ARESETN"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M01_ARESETN"/>
@@ -6684,9 +6670,7 @@
             <CONNECTION INSTANCE="axi_mem_intercon" PORT="S01_ARESETN"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M03_ARESETN"/>
             <CONNECTION INSTANCE="processing_system7_0_axi_periph" PORT="M04_ARESETN"/>
-            <CONNECTION INSTANCE="ddr2fpga_0" PORT="ap_rst_n"/>
-            <CONNECTION INSTANCE="fpga2ddr_0" PORT="ap_rst_n"/>
-            <CONNECTION INSTANCE="iterator_0" PORT="ap_rst_n"/>
+            <CONNECTION INSTANCE="axi_intc_0" PORT="s_axi_aresetn"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
@@ -6727,38 +6711,28 @@
         <PARAMETER NAME="IN29_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN30_WIDTH" VALUE="1"/>
         <PARAMETER NAME="IN31_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="dout_width" VALUE="5"/>
-        <PARAMETER NAME="NUM_PORTS" VALUE="5"/>
+        <PARAMETER NAME="dout_width" VALUE="3"/>
+        <PARAMETER NAME="NUM_PORTS" VALUE="3"/>
         <PARAMETER NAME="Component_Name" VALUE="design_1_xlconcat_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
       </PARAMETERS>
       <PORTS>
-        <PORT DIR="I" LEFT="0" NAME="In0" RIGHT="0" SIGIS="undef" SIGNAME="fpga2ddr_0_interrupt">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="fpga2ddr_0" PORT="interrupt"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="0" NAME="In1" RIGHT="0" SIGIS="undef" SIGNAME="ddr2fpga_0_interrupt">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="ddr2fpga_0" PORT="interrupt"/>
-          </CONNECTIONS>
-        </PORT>
-        <PORT DIR="I" LEFT="0" NAME="In2" RIGHT="0" SIGIS="undef" SIGNAME="axi_dma_0_mm2s_introut">
+        <PORT DIR="I" LEFT="0" NAME="In0" RIGHT="0" SIGIS="undef" SIGNAME="axi_dma_0_mm2s_introut">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_dma_0" PORT="mm2s_introut"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="In3" RIGHT="0" SIGIS="undef" SIGNAME="axi_dma_0_s2mm_introut">
+        <PORT DIR="I" LEFT="0" NAME="In1" RIGHT="0" SIGIS="undef" SIGNAME="axi_dma_0_s2mm_introut">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_dma_0" PORT="s2mm_introut"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="In4" RIGHT="0" SIGIS="undef" SIGNAME="iterator_0_interrupt">
+        <PORT DIR="I" LEFT="0" NAME="In2" RIGHT="0" SIGIS="undef" SIGNAME="iterator_0_interrupt">
           <CONNECTIONS>
             <CONNECTION INSTANCE="iterator_0" PORT="interrupt"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="4" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
+        <PORT DIR="O" LEFT="2" NAME="dout" RIGHT="0" SIGIS="undef" SIGNAME="xlconcat_0_dout">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_intc_0" PORT="intr"/>
           </CONNECTIONS>

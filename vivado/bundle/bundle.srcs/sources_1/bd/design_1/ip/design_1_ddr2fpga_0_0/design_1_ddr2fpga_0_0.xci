@@ -64,7 +64,7 @@
         <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_CUSTOMIZATION">TRUE</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="PROJECT_PARAM.USE_RDI_GENERATION">TRUE</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPCONTEXT">IP_Integrator</spirit:configurableElementValue>
-        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">1809232005</spirit:configurableElementValue>
+        <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.IPREVISION">1809241118</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.MANAGED">TRUE</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.OUTPUTDIR">.</spirit:configurableElementValue>
         <spirit:configurableElementValue spirit:referenceId="RUNTIME_PARAM.SELECTEDSIMMODEL"/>
@@ -78,7 +78,6 @@
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.AP_CLK.CLK_DOMAIN" xilinx:valueSource="default_prop"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.AP_CLK.FREQ_HZ" xilinx:valueSource="user_prop"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.INTERRUPT.LAYERED_METADATA" xilinx:valueSource="default_prop"/>
-            <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.INTERRUPT.PortWidth" xilinx:valueSource="default_prop"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.I_STREAM.CLK_DOMAIN" xilinx:valueSource="default_prop"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.I_STREAM.FREQ_HZ" xilinx:valueSource="user_prop"/>
             <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.I_STREAM.HAS_TKEEP" xilinx:valueSource="constant"/>

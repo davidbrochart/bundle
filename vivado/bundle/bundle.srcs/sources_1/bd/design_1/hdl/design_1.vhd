@@ -1,7 +1,7 @@
 --Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2016.1 (lin64) Build 1538259 Fri Apr  8 15:45:23 MDT 2016
---Date        : Mon Sep 24 11:41:19 2018
+--Date        : Tue Sep 25 23:54:25 2018
 --Host        : ubuntu running 64-bit Ubuntu 17.04
 --Command     : generate_target design_1.bd
 --Design      : design_1
@@ -3059,7 +3059,7 @@ entity design_1 is
     FIXED_IO_ps_srstb : inout STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
-  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=22,numReposBlks=11,numNonXlnxBlks=0,numHierBlks=11,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=3,numHdlrefBlks=0,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=2,synth_mode=Global}";
+  attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=23,numReposBlks=12,numNonXlnxBlks=0,numHierBlks=11,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=3,numHdlrefBlks=0,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=3,synth_mode=Global}";
   attribute HW_HANDOFF : string;
   attribute HW_HANDOFF of design_1 : entity is "design_1.hwdef";
 end design_1;
@@ -3402,7 +3402,7 @@ architecture STRUCTURE of design_1 is
     interrupt : out STD_LOGIC
   );
   end component design_1_iterator_0_0;
-  component design_1_axi_intc_0_1 is
+  component design_1_axi_intc_0_0 is
   port (
     s_axi_aclk : in STD_LOGIC;
     s_axi_aresetn : in STD_LOGIC;
@@ -3423,10 +3423,18 @@ architecture STRUCTURE of design_1 is
     s_axi_rresp : out STD_LOGIC_VECTOR ( 1 downto 0 );
     s_axi_rvalid : out STD_LOGIC;
     s_axi_rready : in STD_LOGIC;
-    intr : in STD_LOGIC_VECTOR ( 0 to 0 );
+    intr : in STD_LOGIC_VECTOR ( 2 downto 0 );
     irq : out STD_LOGIC
   );
-  end component design_1_axi_intc_0_1;
+  end component design_1_axi_intc_0_0;
+  component design_1_xlconcat_0_0 is
+  port (
+    In0 : in STD_LOGIC_VECTOR ( 0 to 0 );
+    In1 : in STD_LOGIC_VECTOR ( 0 to 0 );
+    In2 : in STD_LOGIC_VECTOR ( 0 to 0 );
+    dout : out STD_LOGIC_VECTOR ( 2 downto 0 )
+  );
+  end component design_1_xlconcat_0_0;
   signal axi_dma_0_M_AXIS_MM2S_TDATA : STD_LOGIC_VECTOR ( 63 downto 0 );
   signal axi_dma_0_M_AXIS_MM2S_TKEEP : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal axi_dma_0_M_AXIS_MM2S_TLAST : STD_LOGIC;
@@ -3461,6 +3469,8 @@ architecture STRUCTURE of design_1 is
   signal axi_dma_0_M_AXI_S2MM_WREADY : STD_LOGIC_VECTOR ( 0 to 0 );
   signal axi_dma_0_M_AXI_S2MM_WSTRB : STD_LOGIC_VECTOR ( 7 downto 0 );
   signal axi_dma_0_M_AXI_S2MM_WVALID : STD_LOGIC;
+  signal axi_dma_0_mm2s_introut : STD_LOGIC;
+  signal axi_dma_0_s2mm_introut : STD_LOGIC;
   signal axi_intc_0_irq : STD_LOGIC;
   signal axi_mem_intercon_M00_AXI_ARADDR : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal axi_mem_intercon_M00_AXI_ARBURST : STD_LOGIC_VECTOR ( 1 downto 0 );
@@ -3653,9 +3663,8 @@ architecture STRUCTURE of design_1 is
   signal processing_system7_0_axi_periph_M04_AXI_WVALID : STD_LOGIC;
   signal rst_processing_system7_0_50M_interconnect_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
   signal rst_processing_system7_0_50M_peripheral_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal NLW_axi_dma_0_mm2s_introut_UNCONNECTED : STD_LOGIC;
+  signal xlconcat_0_dout : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal NLW_axi_dma_0_mm2s_prmry_reset_out_n_UNCONNECTED : STD_LOGIC;
-  signal NLW_axi_dma_0_s2mm_introut_UNCONNECTED : STD_LOGIC;
   signal NLW_axi_dma_0_s2mm_prmry_reset_out_n_UNCONNECTED : STD_LOGIC;
   signal NLW_ddr2fpga_0_interrupt_UNCONNECTED : STD_LOGIC;
   signal NLW_ddr2fpga_0_mem_V_ce0_UNCONNECTED : STD_LOGIC;
@@ -3749,9 +3758,9 @@ axi_dma_0: component design_1_axi_dma_0_0
       m_axis_mm2s_tlast => axi_dma_0_M_AXIS_MM2S_TLAST,
       m_axis_mm2s_tready => axi_dma_0_M_AXIS_MM2S_TREADY,
       m_axis_mm2s_tvalid => axi_dma_0_M_AXIS_MM2S_TVALID,
-      mm2s_introut => NLW_axi_dma_0_mm2s_introut_UNCONNECTED,
+      mm2s_introut => axi_dma_0_mm2s_introut,
       mm2s_prmry_reset_out_n => NLW_axi_dma_0_mm2s_prmry_reset_out_n_UNCONNECTED,
-      s2mm_introut => NLW_axi_dma_0_s2mm_introut_UNCONNECTED,
+      s2mm_introut => axi_dma_0_s2mm_introut,
       s2mm_prmry_reset_out_n => NLW_axi_dma_0_s2mm_prmry_reset_out_n_UNCONNECTED,
       s_axi_lite_aclk => processing_system7_0_FCLK_CLK0,
       s_axi_lite_araddr(9 downto 0) => processing_system7_0_axi_periph_M01_AXI_ARADDR(9 downto 0),
@@ -3776,9 +3785,9 @@ axi_dma_0: component design_1_axi_dma_0_0
       s_axis_s2mm_tready => fpga2ddr_0_o_stream_TREADY,
       s_axis_s2mm_tvalid => fpga2ddr_0_o_stream_TVALID
     );
-axi_intc_0: component design_1_axi_intc_0_1
+axi_intc_0: component design_1_axi_intc_0_0
      port map (
-      intr(0) => iterator_0_interrupt,
+      intr(2 downto 0) => xlconcat_0_dout(2 downto 0),
       irq => axi_intc_0_irq,
       s_axi_aclk => processing_system7_0_FCLK_CLK0,
       s_axi_araddr(8 downto 0) => processing_system7_0_axi_periph_M04_AXI_ARADDR(8 downto 0),
@@ -4252,6 +4261,13 @@ rst_processing_system7_0_50M: component design_1_rst_processing_system7_0_50M_0
       peripheral_aresetn(0) => rst_processing_system7_0_50M_peripheral_aresetn(0),
       peripheral_reset(0) => NLW_rst_processing_system7_0_50M_peripheral_reset_UNCONNECTED(0),
       slowest_sync_clk => processing_system7_0_FCLK_CLK0
+    );
+xlconcat_0: component design_1_xlconcat_0_0
+     port map (
+      In0(0) => axi_dma_0_mm2s_introut,
+      In1(0) => axi_dma_0_s2mm_introut,
+      In2(0) => iterator_0_interrupt,
+      dout(2 downto 0) => xlconcat_0_dout(2 downto 0)
     );
     GEN_MEM_NB: for I in 0 to MEM_NB - 1 generate
         u_mem: memory

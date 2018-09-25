@@ -412,7 +412,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.interrupt.irq" xilinx:dependency="spirit:decode(id(&apos;PARAM_VALUE.C_IRQ_CONNECTION&apos;)) = 1">false</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.interrupt.irq" xilinx:dependency="spirit:decode(id(&apos;PARAM_VALUE.C_IRQ_CONNECTION&apos;)) = 1">true</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -471,7 +471,7 @@
       <spirit:vendorExtensions>
         <xilinx:busInterfaceInfo>
           <xilinx:enablement>
-            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.interrupt" xilinx:dependency="spirit:decode(id(&apos;PARAM_VALUE.C_IRQ_CONNECTION&apos;)) = 0">true</xilinx:isEnabled>
+            <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="BUSIF_ENABLEMENT.interrupt" xilinx:dependency="spirit:decode(id(&apos;PARAM_VALUE.C_IRQ_CONNECTION&apos;)) = 0">false</xilinx:isEnabled>
           </xilinx:enablement>
         </xilinx:busInterfaceInfo>
       </spirit:vendorExtensions>
@@ -495,11 +495,11 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>SENSITIVITY</spirit:name>
-          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.INTERRUPT_INPUT.SENSITIVITY">LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH</spirit:value>
+          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.INTERRUPT_INPUT.SENSITIVITY">LEVEL_HIGH:LEVEL_HIGH:LEVEL_HIGH</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>PortWidth</spirit:name>
-          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.INTERRUPT_INPUT.PortWidth">5</spirit:value>
+          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.INTERRUPT_INPUT.PortWidth">3</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -561,11 +561,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Mon Sep 17 08:44:13 UTC 2018</spirit:value>
+            <spirit:value>Tue Sep 25 21:54:27 UTC 2018</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRC</spirit:name>
-            <spirit:value>f3ca3a85</spirit:value>
+            <spirit:value>3fe5f149</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRCversion</spirit:name>
@@ -573,7 +573,7 @@
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRC</spirit:name>
-            <spirit:value>f9d6cfb7</spirit:value>
+            <spirit:value>ae606f05</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRCversion</spirit:name>
@@ -592,11 +592,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Mon Sep 17 08:44:13 UTC 2018</spirit:value>
+            <spirit:value>Tue Sep 25 21:54:27 UTC 2018</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRC</spirit:name>
-            <spirit:value>f3ca3a85</spirit:value>
+            <spirit:value>3fe5f149</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRCversion</spirit:name>
@@ -604,7 +604,7 @@
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRC</spirit:name>
-            <spirit:value>f9d6cfb7</spirit:value>
+            <spirit:value>ae606f05</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRCversion</spirit:name>
@@ -626,11 +626,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sun Sep 23 18:02:38 UTC 2018</spirit:value>
+            <spirit:value>Tue Sep 25 21:54:27 UTC 2018</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRC</spirit:name>
-            <spirit:value>f3ca3a85</spirit:value>
+            <spirit:value>3fe5f149</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRCversion</spirit:name>
@@ -638,7 +638,7 @@
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRC</spirit:name>
-            <spirit:value>4bea97d6</spirit:value>
+            <spirit:value>e2a3d1d1</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRCversion</spirit:name>
@@ -657,11 +657,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Sun Sep 23 18:14:53 UTC 2018</spirit:value>
+            <spirit:value>Tue Sep 25 21:54:27 UTC 2018</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRC</spirit:name>
-            <spirit:value>f3ca3a85</spirit:value>
+            <spirit:value>3fe5f149</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>boundaryCRCversion</spirit:name>
@@ -669,7 +669,7 @@
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRC</spirit:name>
-            <spirit:value>4bea97d6</spirit:value>
+            <spirit:value>e2a3d1d1</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>customizationCRCversion</spirit:name>
@@ -959,7 +959,7 @@
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_NUM_INTR_INPUTS&apos;)) - 1)">4</spirit:left>
+            <spirit:left spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_NUM_INTR_INPUTS&apos;)) - 1)">2</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -1177,7 +1177,7 @@
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>C_NUM_INTR_INPUTS</spirit:name>
         <spirit:displayName>Number of Peripheral Interrupts</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_NUM_INTR_INPUTS" spirit:minimum="1" spirit:maximum="32" spirit:rangeType="long">5</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_NUM_INTR_INPUTS" spirit:minimum="1" spirit:maximum="32" spirit:rangeType="long">3</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>C_NUM_SW_INTR</spirit:name>
@@ -1187,7 +1187,7 @@
       <spirit:modelParameter spirit:dataType="std_logic_vector(31 downto 0)">
         <spirit:name>C_KIND_OF_INTR</spirit:name>
         <spirit:displayName>Interrupts type (Level or Edge)</spirit:displayName>
-        <spirit:value spirit:format="bitString" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_KIND_OF_INTR" spirit:bitStringLength="32">0xffffffe0</spirit:value>
+        <spirit:value spirit:format="bitString" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_KIND_OF_INTR" spirit:bitStringLength="32">0xfffffff8</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="std_logic_vector(31 downto 0)">
         <spirit:name>C_KIND_OF_EDGE</spirit:name>
@@ -1199,7 +1199,7 @@
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="std_logic_vector(31 downto 0)">
         <spirit:name>C_ASYNC_INTR</spirit:name>
-        <spirit:value spirit:format="bitString" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_ASYNC_INTR" spirit:bitStringLength="32">0xFFFFFFE0</spirit:value>
+        <spirit:value spirit:format="bitString" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.C_ASYNC_INTR" spirit:bitStringLength="32">0xFFFFFFF8</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>C_NUM_SYNC_FF</spirit:name>
@@ -1512,19 +1512,19 @@
       <spirit:name>C_KIND_OF_INTR</spirit:name>
       <spirit:displayName>Interrupts type - Edge or Level</spirit:displayName>
       <spirit:description>The setting of each bit in this option indicates the type of incoming interrupt for each bit. 0 = Level, 1 = Edge. Updates of these settings will affect C_KIND_OF_INTR parameter values.</spirit:description>
-      <spirit:value spirit:format="bitString" spirit:resolve="user" spirit:id="PARAM_VALUE.C_KIND_OF_INTR" spirit:order="1900" spirit:bitStringLength="32">0xFFFFFFE0</spirit:value>
+      <spirit:value spirit:format="bitString" spirit:resolve="user" spirit:id="PARAM_VALUE.C_KIND_OF_INTR" spirit:order="1900" spirit:bitStringLength="32">0xFFFFFFF8</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>C_NUM_INTR_INPUTS</spirit:name>
       <spirit:displayName>Number of Peripheral Interrupts</spirit:displayName>
       <spirit:description>The setting of this option indicates number of interrupts input to the core.</spirit:description>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_NUM_INTR_INPUTS" spirit:order="2000" spirit:minimum="1" spirit:maximum="32" spirit:rangeType="long">5</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_NUM_INTR_INPUTS" spirit:order="2000" spirit:minimum="1" spirit:maximum="32" spirit:rangeType="long">3</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>C_NUM_SW_INTR</spirit:name>
       <spirit:displayName>Number of Software Interrupts</spirit:displayName>
       <spirit:description>Number of interupts controlled by software in addition to the hardware interrupt inputs</spirit:description>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_NUM_SW_INTR" spirit:order="2050" spirit:minimum="0" spirit:maximum="27" spirit:rangeType="long">0</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_NUM_SW_INTR" spirit:order="2050" spirit:minimum="0" spirit:maximum="29" spirit:rangeType="long">0</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>C_KIND_OF_LVL</spirit:name>
@@ -1536,7 +1536,7 @@
       <spirit:name>C_ASYNC_INTR</spirit:name>
       <spirit:displayName>Interrupts asynchronous</spirit:displayName>
       <spirit:description>The setting of each bit in this option indicates whether the incoming interrupt is treated as asynchronous or not. 0 = Synchronous, 1 = Asynchronous.</spirit:description>
-      <spirit:value spirit:format="bitString" spirit:resolve="user" spirit:id="PARAM_VALUE.C_ASYNC_INTR" spirit:order="2110" spirit:bitStringLength="32">0xFFFFFFE0</spirit:value>
+      <spirit:value spirit:format="bitString" spirit:resolve="user" spirit:id="PARAM_VALUE.C_ASYNC_INTR" spirit:order="2110" spirit:bitStringLength="32">0xFFFFFFF8</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>C_NUM_SYNC_FF</spirit:name>
@@ -1642,7 +1642,7 @@
       <spirit:name>C_IRQ_CONNECTION</spirit:name>
       <spirit:displayName>Interrupt Output Connection</spirit:displayName>
       <spirit:description>Select interrupt output connection bus interface. Normally Bus is used when connecting to MicroBlaze and cascaded AXI Interrupt Controllers. Otherwise Single can be used when Fast Mode Interrupt is not enabled, and the target has a single interrupt input.</spirit:description>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_IRQ_CONNECTION" spirit:choiceRef="choice_pairs_d4609148" spirit:order="3200">0</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.C_IRQ_CONNECTION" spirit:choiceRef="choice_pairs_d4609148" spirit:order="3200">1</spirit:value>
     </spirit:parameter>
   </spirit:parameters>
   <spirit:vendorExtensions>
