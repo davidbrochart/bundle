@@ -4288,45 +4288,65 @@ rst_processing_system7_0_50M: component design_1_rst_processing_system7_0_50M_0
             );
         end generate GEN_MUL_NB;
     end generate GEN_FUNC_NB;
+
     process(s_mem_dout, s_fpga2ddr_mem_i, s_fpga2ddr_addr, s_fpga2ddr_cena, s_ddr2fpga_mem_i, s_ddr2fpga_wena, s_ddr2fpga_cena, s_ddr2fpga_addr, s_ddr2fpga_mem_din, s_func_arg_valid, s_func_arg0, s_func_arg1, s_func_res_valid, s_iter_raddr, s_iter_waddr, s_iter_wena, s_iter_cena, s_iter_rmem0_i, s_iter_rmem1_i, s_iter_wmem_i, s_func_res, s_iter_func_i, s_iter_arg_valid)
+    variable v_mem_cena:            t_mem_nb_1;
+    variable v_mem_wena:            t_mem_nb_1;
+    variable v_mem_addr:            t_mem_nb_mem_depth_bitnb;
+    variable v_mem_din:             t_mem_nb_mem_width;
+    variable v_func_arg0:           t_func_nb_mem_width;
+    variable v_func_arg1:           t_func_nb_mem_width;
+    variable v_func_arg_valid:      t_func_nb_1;
     begin
         for I in 0 to MEM_NB - 1 loop
-            s_mem_addr(I)   <= (others => '0');
-            s_mem_din(I)    <= (others => '0');
-            s_mem_wena(I)   <= '0';
-            s_mem_cena(I)   <= '0';
+            v_mem_addr(I)   := (others => '0');
+            v_mem_din(I)    := (others => '0');
+            v_mem_wena(I)   := '0';
+            v_mem_cena(I)   := '0';
         end loop;
         for I in 0 to FPGA2DDR_NB - 1 loop
-            s_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) <= s_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_addr(I);
-            s_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) <= s_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_cena(I);
+            v_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) := v_mem_addr(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_addr(I);
+            v_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) := v_mem_cena(conv_integer(unsigned(s_fpga2ddr_mem_i(I)))) or s_fpga2ddr_cena(I);
             s_fpga2ddr_mem_dout(I) <= s_mem_dout(conv_integer(unsigned(s_fpga2ddr_mem_i(I))));
         end loop;
         for I in 0 to DDR2FPGA_NB - 1 loop
-            s_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_cena(I);
-            s_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_wena(I);
-            s_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) <= s_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_addr(I);
-            s_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  <= s_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  or s_ddr2fpga_mem_din(I);
+            v_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) := v_mem_cena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_cena(I);
+            v_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) := v_mem_wena(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_wena(I);
+            v_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) := v_mem_addr(conv_integer(unsigned(s_ddr2fpga_mem_i(I)))) or s_ddr2fpga_addr(I);
+            v_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  := v_mem_din(conv_integer(unsigned(s_ddr2fpga_mem_i(I))))  or s_ddr2fpga_mem_din(I);
         end loop;
         for I in 0 to FUNC_NB - 1 loop
-            s_func_arg_valid(I) <= '0';
-            s_func_arg0(I)      <= (others => '0');
-            s_func_arg1(I)      <= (others => '0');
+            v_func_arg_valid(I) := '0';
+            v_func_arg0(I)      := (others => '0');
+            v_func_arg1(I)      := (others => '0');
         end loop;
         for I in 0 to ITER_NB - 1 loop
-            s_mem_addr(conv_integer(unsigned(s_iter_rmem0_i(I))))       <= s_mem_addr(conv_integer(unsigned(s_iter_rmem0_i(I))))      or s_iter_raddr(I);
-            s_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))       <= s_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_raddr(I);
-            s_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_waddr(I);
-            s_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_wena(I);
-            s_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))        <= s_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_cena(I);
-            s_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))       <= s_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))      or s_iter_cena(I);
-            s_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))       <= s_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_cena(I);
-            s_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))         <= s_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))        or s_func_res(conv_integer(unsigned(s_iter_func_i(I))));
-            s_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I))))  <= s_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I)))) or s_iter_arg_valid(I);
+            v_mem_addr(conv_integer(unsigned(s_iter_rmem0_i(I))))       := v_mem_addr(conv_integer(unsigned(s_iter_rmem0_i(I))))      or s_iter_raddr(I);
+            v_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))       := v_mem_addr(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_raddr(I);
+            v_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))        := v_mem_addr(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_waddr(I);
+            v_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))        := v_mem_wena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_wena(I);
+            v_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))        := v_mem_cena(conv_integer(unsigned(s_iter_wmem_i(I))))       or s_iter_cena(I);
+            v_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))       := v_mem_cena(conv_integer(unsigned(s_iter_rmem0_i(I))))      or s_iter_cena(I);
+            v_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))       := v_mem_cena(conv_integer(unsigned(s_iter_rmem1_i(I))))      or s_iter_cena(I);
+            v_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))         := v_mem_din(conv_integer(unsigned(s_iter_wmem_i(I))))        or s_func_res(conv_integer(unsigned(s_iter_func_i(I))));
+            v_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I))))  := v_func_arg_valid(conv_integer(unsigned(s_iter_func_i(I)))) or s_iter_arg_valid(I);
             if s_iter_arg_valid(I) = '1' then
-                s_func_arg0(conv_integer(unsigned(s_iter_func_i(I))))   <= s_func_arg0(conv_integer(unsigned(s_iter_func_i(I)))) or s_mem_dout(conv_integer(unsigned(s_iter_rmem0_i(I))));
-                s_func_arg1(conv_integer(unsigned(s_iter_func_i(I))))   <= s_func_arg1(conv_integer(unsigned(s_iter_func_i(I)))) or s_mem_dout(conv_integer(unsigned(s_iter_rmem1_i(I))));
+                v_func_arg0(conv_integer(unsigned(s_iter_func_i(I))))   := v_func_arg0(conv_integer(unsigned(s_iter_func_i(I)))) or s_mem_dout(conv_integer(unsigned(s_iter_rmem0_i(I))));
+                v_func_arg1(conv_integer(unsigned(s_iter_func_i(I))))   := v_func_arg1(conv_integer(unsigned(s_iter_func_i(I)))) or s_mem_dout(conv_integer(unsigned(s_iter_rmem1_i(I))));
             end if;
             s_iter_res_valid(I) <= s_func_res_valid(conv_integer(unsigned(s_iter_func_i(I))));
         end loop;
+        for I in 0 to MEM_NB - 1 loop
+            s_mem_addr(I)   <= v_mem_addr(I);
+            s_mem_din(I)    <= v_mem_din(I) ;
+            s_mem_wena(I)   <= v_mem_wena(I);
+            s_mem_cena(I)   <= v_mem_cena(I);
+        end loop;
+        for I in 0 to FUNC_NB - 1 loop
+            s_func_arg_valid(I) <= v_func_arg_valid(I);
+            s_func_arg0(I)      <= v_func_arg0(I)     ;
+            s_func_arg1(I)      <= v_func_arg1(I)     ;
+        end loop;
     end process;
+
 end STRUCTURE;

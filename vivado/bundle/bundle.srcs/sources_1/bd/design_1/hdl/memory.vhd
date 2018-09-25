@@ -22,10 +22,10 @@ begin
     begin
         if i_clk = '1' and i_clk'event then
             if i_cena = '1' then
-                o_dout <= mem(conv_integer(unsigned(i_addr)));
                 if i_wena = '1' then
                     mem(conv_integer(unsigned(i_addr))) <= i_din;
                 end if;
+                o_dout <= mem(conv_integer(unsigned(i_addr)));
             end if;
         end if;
     end process;
