@@ -15,6 +15,10 @@ import inspect
 import asyncio
 import numpy as np
 from .async_func import ddr2fpga, fpga2ddr, binary_func
+try:
+    from tqdm import tqdm
+except:
+    tqdm = None
 
 TNUMBER = 0
 TOP1 = 1
@@ -794,8 +798,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
     byte_nb = out_array.nbytes # remaining bytes
     remaining_tasks = []
     all_done = False
-    if not debug:
-        from tqdm import tqdm
+    if (not debug) and tqdm:
         pbar = tqdm(total=byte_nb)
     while not all_done:
         # this loop is done when all operations have been scheduled
@@ -855,8 +858,8 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
             all_done = True
         finished, unfinished = event_loop.run_until_complete(asyncio.wait(remaining_tasks, return_when=when))
         remaining_tasks = list(unfinished)
-        if not debug:
+        if (not debug) and tqdm:
             pbar.update(nbytes)
-    if not debug:
+    if (not debug) and tqdm:
         pbar.close()
     return out_array

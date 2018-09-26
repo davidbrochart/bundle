@@ -8,8 +8,12 @@ class PYNQ(object):
         self.u_fpga2ddr = [overlay.fpga2ddr_0]
         self.u_axi_dma = [overlay.axi_dma_0]
         self.u_iter = [overlay.iterator_0]
+        # enable iterator interrupts
+        for i in self.u_iter:
+            i.write(0x04, 1)
+            i.write(0x08, 1)
 
-        sell.xlnk = Xlnk()
+        xlnk = Xlnk()
         self.chunk_array = [xlnk.cma_array(shape=(fpga_config.config['mem_depth'],), dtype=np.uint64) for i in range(fpga_config.config['mem_nb'])]
 
         self.state = FPGA_state(fpga_config)
@@ -27,14 +31,19 @@ class PYNQ(object):
     async def done(self, iter_i):
         # operation completion check
         await self.u_iter[iter_i].interrupt.wait()
-        self.u_iter[iter_i].write(0x0C, 1)
         self.u_iter[iter_i].write(0x30, 0)
+        # clear interrupt
+        self.u_iter[iter_i].write(0x0C, 1)
 
     def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
         # memory write
         self.u_ddr2fpga[ddr2fpga_i].write(0x10, mem_i)
         self.u_ddr2fpga[ddr2fpga_i].write(0x18, data_nb)
         self.u_ddr2fpga[ddr2fpga_i].write(0x00, 1)
+        ptr = array_ptr.physical_address
+        array_ptr = array_ptr[:data_nb]
+        array_ptr.physical_address = ptr
+        array_ptr.cacheable = 0
         self.u_axi_dma[ddr2fpga_i].sendchannel.transfer(array_ptr)
 
     async def ddr2fpga_done(self, ddr2fpga_i):
@@ -47,6 +56,10 @@ class PYNQ(object):
         self.u_fpga2ddr[fpga2ddr_i].write(0x10, mem_i)
         self.u_fpga2ddr[fpga2ddr_i].write(0x18, data_nb)
         self.u_fpga2ddr[fpga2ddr_i].write(0x00, 1)
+        ptr = array_ptr.physical_address
+        array_ptr = array_ptr[:data_nb]
+        array_ptr.physical_address = ptr
+        array_ptr.cacheable = 0
         self.u_axi_dma[fpga2ddr_i].recvchannel.transfer(array_ptr)
 
     async def fpga2ddr_done(self, fpga2ddr_i):
