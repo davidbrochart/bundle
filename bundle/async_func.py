@@ -1,6 +1,6 @@
 import asyncio
 
-async def ddr2fpga(array_ptr, nbytes, mem_i, fpga, await_tasks=[], debug=False):
+async def ddr2fpga(chunk_array, nbytes, mem_i, fpga, await_tasks=[], debug=False):
     for t in await_tasks:
         await t
     while fpga.state.free_ddr2fpga_nb == 0:
@@ -9,13 +9,13 @@ async def ddr2fpga(array_ptr, nbytes, mem_i, fpga, await_tasks=[], debug=False):
     ddr2fpga_i = fpga.state.ddr2fpga_alloc()
     if debug:
         print(f'ddr2fpga start (mem_i = {mem_i}, ddr2fpga_i = {ddr2fpga_i})')
-    fpga.ddr2fpga(ddr2fpga_i, mem_i, array_ptr, nbytes // 8)
+    fpga.ddr2fpga(ddr2fpga_i, mem_i, chunk_array, nbytes // 8)
     await fpga.ddr2fpga_done(ddr2fpga_i)
     fpga.state.ddr2fpga_free(ddr2fpga_i)
     if debug:
         print(f'ddr2fpga done (mem_i = {mem_i})')
 
-async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[], debug=False):
+async def fpga2ddr(chunk_array, array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[], debug=False):
     for t in await_tasks:
         await t
     # free all allocated memories except result memory
@@ -28,8 +28,9 @@ async def fpga2ddr(array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[], deb
     fpga2ddr_i = fpga.state.fpga2ddr_alloc()
     if debug:
         print(f'fpga2ddr start (mem_i = {mem_i}, fpga2ddr_i = {fpga2ddr_i})')
-    fpga.fpga2ddr(fpga2ddr_i, mem_i, array_ptr, nbytes // 8)
+    fpga.fpga2ddr(fpga2ddr_i, mem_i, chunk_array, nbytes // 8)
     await fpga.fpga2ddr_done(fpga2ddr_i)
+    array_ptr[:] = chunk_array[:array_ptr.size]
     fpga.state.fpga2ddr_free(fpga2ddr_i)
     fpga.state.mem_free(mem_i)
     if debug:

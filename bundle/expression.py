@@ -823,7 +823,8 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                         ii = task[2:4]
                         for i in ii:
                             if (i < len(var)) and (t[i] is None):
-                                t[i] = asyncio.ensure_future(ddr2fpga(in_arrays[i][idx0:idx1], nbytes, mem[i], fpga, debug=debug))
+                                fpga.chunk_array[mem[i]][:idx1-idx0] = in_arrays[i][idx0:idx1]
+                                t[i] = asyncio.ensure_future(ddr2fpga(fpga.chunk_array[mem[i]], nbytes, mem[i], fpga, debug=debug))
                 for task in tasks:
                     if task[0] == binary_func:
                         func = task[1]
@@ -833,7 +834,7 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                 # last task is final operation, get its result memory
                 i = tasks[-1][4]
                 # and copy it back to DDR
-                t.append(asyncio.ensure_future(fpga2ddr(out_array[idx0:idx1], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
+                t.append(asyncio.ensure_future(fpga2ddr(fpga.chunk_array[mem[i]], out_array[idx0:idx1], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
                 remaining_tasks += t
                 byte_nb -= nbytes
                 idx0 = idx1
