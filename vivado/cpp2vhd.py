@@ -1,7 +1,7 @@
 from math import ceil, log2
 from subprocess import call
 
-ddr2fpga_nb = 1
+ddr2fpga_nb = 2
 fpga2ddr_nb = 1
 iter_nb = 1
 mem_nb = iter_nb * 3
@@ -73,6 +73,6 @@ with open('cpp/bundlepack.h', 'w') as f:
 with open('bundle/bundle.srcs/sources_1/bd/design_1/hdl/bundlepack.vhd', 'w') as f:
     f.write(bundlepack_vhd)
 
-call('vivado_hls ddr2fpga/solution1/script.tcl'.split())
-call('vivado_hls fpga2ddr/solution1/script.tcl'.split())
-call('vivado_hls iterator/solution1/script.tcl'.split())
+#call('vivado_hls ddr2fpga/solution1/script.tcl'.split())
+#call('vivado_hls fpga2ddr/solution1/script.tcl'.split())
+#call('vivado_hls iterator/solution1/script.tcl'.split())

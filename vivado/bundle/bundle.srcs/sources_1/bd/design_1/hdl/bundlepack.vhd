@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package bundlepack is
-    constant DDR2FPGA_NB        : integer := 1;
+    constant DDR2FPGA_NB        : integer := 2;
     constant FPGA2DDR_NB        : integer := 1;
     constant ITER_NB            : integer := 1;
     constant ADD_NB             : integer := 1;

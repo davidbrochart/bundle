@@ -162,16 +162,38 @@ proc create_root_design { parentCell } {
   # Create instance: axi_dma_0, and set properties
   set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
   set_property -dict [ list \
-CONFIG.c_include_mm2s_dre {1} \
-CONFIG.c_include_s2mm_dre {1} \
+CONFIG.c_include_s2mm {0} \
 CONFIG.c_include_sg {0} \
 CONFIG.c_m_axi_mm2s_data_width {64} \
-CONFIG.c_m_axi_s2mm_data_width {64} \
 CONFIG.c_m_axis_mm2s_tdata_width {64} \
-CONFIG.c_mm2s_burst_size {8} \
+CONFIG.c_micro_dma {0} \
+CONFIG.c_mm2s_burst_size {256} \
 CONFIG.c_sg_include_stscntrl_strm {0} \
 CONFIG.c_sg_length_width {23} \
  ] $axi_dma_0
+
+  # Create instance: axi_dma_1, and set properties
+  set axi_dma_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_1 ]
+  set_property -dict [ list \
+CONFIG.c_include_mm2s {0} \
+CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_s2mm_data_width {64} \
+CONFIG.c_s2mm_burst_size {256} \
+CONFIG.c_sg_include_stscntrl_strm {0} \
+CONFIG.c_sg_length_width {23} \
+ ] $axi_dma_1
+
+  # Create instance: axi_dma_2, and set properties
+  set axi_dma_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_2 ]
+  set_property -dict [ list \
+CONFIG.c_include_s2mm {0} \
+CONFIG.c_include_sg {0} \
+CONFIG.c_m_axi_mm2s_data_width {64} \
+CONFIG.c_m_axis_mm2s_tdata_width {64} \
+CONFIG.c_mm2s_burst_size {256} \
+CONFIG.c_sg_include_stscntrl_strm {0} \
+CONFIG.c_sg_length_width {23} \
+ ] $axi_dma_2
 
   # Create instance: axi_intc_0, and set properties
   set axi_intc_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc:4.1 axi_intc_0 ]
@@ -183,11 +205,14 @@ CONFIG.C_IRQ_CONNECTION {1} \
   set axi_mem_intercon [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_mem_intercon ]
   set_property -dict [ list \
 CONFIG.NUM_MI {1} \
-CONFIG.NUM_SI {2} \
+CONFIG.NUM_SI {4} \
  ] $axi_mem_intercon
 
   # Create instance: ddr2fpga_0, and set properties
   set ddr2fpga_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:ddr2fpga:1.0 ddr2fpga_0 ]
+
+  # Create instance: ddr2fpga_1, and set properties
+  set ddr2fpga_1 [ create_bd_cell -type ip -vlnv xilinx.com:hls:ddr2fpga:1.0 ddr2fpga_1 ]
 
   # Create instance: fpga2ddr_0, and set properties
   set fpga2ddr_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:fpga2ddr:1.0 fpga2ddr_0 ]
@@ -1168,7 +1193,7 @@ CONFIG.PCW_WDT_WDT_IO.VALUE_SRC {DEFAULT} \
   # Create instance: processing_system7_0_axi_periph, and set properties
   set processing_system7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 processing_system7_0_axi_periph ]
   set_property -dict [ list \
-CONFIG.NUM_MI {5} \
+CONFIG.NUM_MI {8} \
  ] $processing_system7_0_axi_periph
 
   # Create instance: rst_processing_system7_0_50M, and set properties
@@ -1177,15 +1202,17 @@ CONFIG.NUM_MI {5} \
   # Create instance: xlconcat_0, and set properties
   set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0 ]
   set_property -dict [ list \
-CONFIG.NUM_PORTS {3} \
+CONFIG.NUM_PORTS {4} \
  ] $xlconcat_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins ddr2fpga_0/i_stream]
   connect_bd_intf_net -intf_net axi_dma_0_M_AXI_MM2S [get_bd_intf_pins axi_dma_0/M_AXI_MM2S] [get_bd_intf_pins axi_mem_intercon/S00_AXI]
-  connect_bd_intf_net -intf_net axi_dma_0_M_AXI_S2MM [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins axi_mem_intercon/S01_AXI]
+  connect_bd_intf_net -intf_net axi_dma_1_M_AXI_S2MM [get_bd_intf_pins axi_dma_1/M_AXI_S2MM] [get_bd_intf_pins axi_mem_intercon/S01_AXI]
+  connect_bd_intf_net -intf_net axi_dma_2_M_AXIS_MM2S [get_bd_intf_pins axi_dma_2/M_AXIS_MM2S] [get_bd_intf_pins ddr2fpga_1/i_stream]
+  connect_bd_intf_net -intf_net axi_dma_2_M_AXI_MM2S [get_bd_intf_pins axi_dma_2/M_AXI_MM2S] [get_bd_intf_pins axi_mem_intercon/S02_AXI]
   connect_bd_intf_net -intf_net axi_mem_intercon_M00_AXI [get_bd_intf_pins axi_mem_intercon/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP0]
-  connect_bd_intf_net -intf_net fpga2ddr_0_o_stream [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins fpga2ddr_0/o_stream]
+  connect_bd_intf_net -intf_net fpga2ddr_0_o_stream [get_bd_intf_pins axi_dma_1/S_AXIS_S2MM] [get_bd_intf_pins fpga2ddr_0/o_stream]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
@@ -1194,24 +1221,32 @@ CONFIG.NUM_PORTS {3} \
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M02_AXI [get_bd_intf_pins fpga2ddr_0/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M02_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M03_AXI [get_bd_intf_pins iterator_0/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M03_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M04_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins processing_system7_0_axi_periph/M04_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M05_AXI [get_bd_intf_pins ddr2fpga_1/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M05_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M06_AXI [get_bd_intf_pins axi_dma_1/S_AXI_LITE] [get_bd_intf_pins processing_system7_0_axi_periph/M06_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M07_AXI [get_bd_intf_pins axi_dma_2/S_AXI_LITE] [get_bd_intf_pins processing_system7_0_axi_periph/M07_AXI]
 
   # Create port connections
   connect_bd_net -net axi_dma_0_mm2s_introut [get_bd_pins axi_dma_0/mm2s_introut] [get_bd_pins xlconcat_0/In0]
-  connect_bd_net -net axi_dma_0_s2mm_introut [get_bd_pins axi_dma_0/s2mm_introut] [get_bd_pins xlconcat_0/In1]
+  connect_bd_net -net axi_dma_1_s2mm_introut [get_bd_pins axi_dma_1/s2mm_introut] [get_bd_pins xlconcat_0/In1]
+  connect_bd_net -net axi_dma_2_mm2s_introut [get_bd_pins axi_dma_2/mm2s_introut] [get_bd_pins xlconcat_0/In3]
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins processing_system7_0/IRQ_F2P]
   connect_bd_net -net iterator_0_interrupt [get_bd_pins iterator_0/interrupt] [get_bd_pins xlconcat_0/In2]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_mem_intercon/ACLK] [get_bd_pins axi_mem_intercon/M00_ACLK] [get_bd_pins axi_mem_intercon/S00_ACLK] [get_bd_pins axi_mem_intercon/S01_ACLK] [get_bd_pins ddr2fpga_0/ap_clk] [get_bd_pins fpga2ddr_0/ap_clk] [get_bd_pins iterator_0/ap_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/M01_ACLK] [get_bd_pins processing_system7_0_axi_periph/M02_ACLK] [get_bd_pins processing_system7_0_axi_periph/M03_ACLK] [get_bd_pins processing_system7_0_axi_periph/M04_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_dma_1/m_axi_s2mm_aclk] [get_bd_pins axi_dma_1/s_axi_lite_aclk] [get_bd_pins axi_dma_2/m_axi_mm2s_aclk] [get_bd_pins axi_dma_2/s_axi_lite_aclk] [get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_mem_intercon/ACLK] [get_bd_pins axi_mem_intercon/M00_ACLK] [get_bd_pins axi_mem_intercon/S00_ACLK] [get_bd_pins axi_mem_intercon/S01_ACLK] [get_bd_pins axi_mem_intercon/S02_ACLK] [get_bd_pins axi_mem_intercon/S03_ACLK] [get_bd_pins ddr2fpga_0/ap_clk] [get_bd_pins ddr2fpga_1/ap_clk] [get_bd_pins fpga2ddr_0/ap_clk] [get_bd_pins iterator_0/ap_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/M01_ACLK] [get_bd_pins processing_system7_0_axi_periph/M02_ACLK] [get_bd_pins processing_system7_0_axi_periph/M03_ACLK] [get_bd_pins processing_system7_0_axi_periph/M04_ACLK] [get_bd_pins processing_system7_0_axi_periph/M05_ACLK] [get_bd_pins processing_system7_0_axi_periph/M06_ACLK] [get_bd_pins processing_system7_0_axi_periph/M07_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_50M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_50M_interconnect_aresetn [get_bd_pins axi_mem_intercon/ARESETN] [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_50M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_mem_intercon/M00_ARESETN] [get_bd_pins axi_mem_intercon/S00_ARESETN] [get_bd_pins axi_mem_intercon/S01_ARESETN] [get_bd_pins ddr2fpga_0/ap_rst_n] [get_bd_pins fpga2ddr_0/ap_rst_n] [get_bd_pins iterator_0/ap_rst_n] [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M01_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M02_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M03_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M04_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]
+  connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_dma_1/axi_resetn] [get_bd_pins axi_dma_2/axi_resetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_mem_intercon/M00_ARESETN] [get_bd_pins axi_mem_intercon/S00_ARESETN] [get_bd_pins axi_mem_intercon/S01_ARESETN] [get_bd_pins axi_mem_intercon/S02_ARESETN] [get_bd_pins axi_mem_intercon/S03_ARESETN] [get_bd_pins ddr2fpga_0/ap_rst_n] [get_bd_pins ddr2fpga_1/ap_rst_n] [get_bd_pins fpga2ddr_0/ap_rst_n] [get_bd_pins iterator_0/ap_rst_n] [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M01_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M02_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M03_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M04_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M05_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M06_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M07_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins axi_intc_0/intr] [get_bd_pins xlconcat_0/dout]
 
   # Create address segments
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
-  create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
+  create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_1/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
+  create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_2/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x00010000 -offset 0x40400000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] SEG_axi_dma_0_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x40410000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_1/S_AXI_LITE/Reg] SEG_axi_dma_1_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x40420000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_2/S_AXI_LITE/Reg] SEG_axi_dma_2_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x41800000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_intc_0/s_axi/Reg] SEG_axi_intc_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs ddr2fpga_0/s_axi_ctrl/Reg] SEG_ddr2fpga_0_Reg
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C30000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs ddr2fpga_1/s_axi_ctrl/Reg] SEG_ddr2fpga_1_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs fpga2ddr_0/s_axi_ctrl/Reg] SEG_fpga2ddr_0_Reg
   create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs iterator_0/s_axi_ctrl/Reg] SEG_iterator_0_Reg
 
@@ -1221,39 +1256,48 @@ CONFIG.NUM_PORTS {3} \
 #  -string -flagsOSRD
 preplace port DDR -pg 1 -y 190 -defaultsOSRD
 preplace port FIXED_IO -pg 1 -y 210 -defaultsOSRD
-preplace inst axi_dma_0 -pg 1 -lvl 4 -y 470 -defaultsOSRD
+preplace inst axi_dma_0 -pg 1 -lvl 5 -y -140 -defaultsOSRD
+preplace inst axi_dma_1 -pg 1 -lvl 5 -y -380 -defaultsOSRD
 preplace inst axi_intc_0 -pg 1 -lvl 4 -y 220 -defaultsOSRD
-preplace inst xlconcat_0 -pg 1 -lvl 3 -y -50 -defaultsOSRD
+preplace inst axi_dma_2 -pg 1 -lvl 5 -y 1060 -defaultsOSRD
+preplace inst xlconcat_0 -pg 1 -lvl 3 -y -180 -defaultsOSRD
 preplace inst iterator_0 -pg 1 -lvl 3 -y 660 -defaultsOSRD
 preplace inst ddr2fpga_0 -pg 1 -lvl 5 -y 130 -defaultsOSRD
 preplace inst rst_processing_system7_0_50M -pg 1 -lvl 1 -y 820 -defaultsOSRD
-preplace inst fpga2ddr_0 -pg 1 -lvl 3 -y 500 -defaultsOSRD
+preplace inst ddr2fpga_1 -pg 1 -lvl 5 -y 830 -defaultsOSRD
+preplace inst fpga2ddr_0 -pg 1 -lvl 3 -y 20 -defaultsOSRD
 preplace inst axi_mem_intercon -pg 1 -lvl 5 -y 500 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 540 -defaultsOSRD
+preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 690 -defaultsOSRD
 preplace inst processing_system7_0 -pg 1 -lvl 6 -y 240 -defaultsOSRD
 preplace netloc processing_system7_0_DDR 1 6 1 NJ
-preplace netloc processing_system7_0_axi_periph_M03_AXI 1 2 1 710
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 3 710 100 NJ 100 NJ
-preplace netloc iterator_0_interrupt 1 2 2 760 20 1150
-preplace netloc rst_processing_system7_0_50M_interconnect_aresetn 1 1 4 360 760 NJ 590 NJ 590 NJ
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 6 390 740 NJ 740 NJ 740 NJ 740 NJ 740 2420
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 7 0 340 NJ 340 NJ 350 NJ 350 NJ 350 NJ 350 2400
-preplace netloc axi_mem_intercon_M00_AXI 1 5 1 1950
-preplace netloc rst_processing_system7_0_50M_peripheral_aresetn 1 1 4 380 770 760 400 1180 300 1580
-preplace netloc processing_system7_0_axi_periph_M02_AXI 1 2 1 740
-preplace netloc axi_dma_0_s2mm_introut 1 2 3 720 40 NJ 40 1540
-preplace netloc axi_dma_0_M_AXI_MM2S 1 4 1 N
-preplace netloc xlconcat_0_dout 1 3 1 1160
+preplace netloc axi_dma_1_M_AXI_S2MM 1 4 2 1540 -470 2010
+preplace netloc processing_system7_0_axi_periph_M03_AXI 1 2 1 760
+preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 3 740 100 NJ 100 NJ
+preplace netloc iterator_0_interrupt 1 2 2 780 -260 1210
+preplace netloc rst_processing_system7_0_50M_interconnect_aresetn 1 1 4 370 430 NJ 430 NJ 430 NJ
+preplace netloc processing_system7_0_axi_periph_M07_AXI 1 2 3 N 760 NJ 760 NJ
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 6 390 310 NJ 310 NJ 310 NJ 280 NJ 140 2510
+preplace netloc processing_system7_0_axi_periph_M05_AXI 1 2 3 710 730 NJ 730 NJ
+preplace netloc axi_dma_1_s2mm_introut 1 2 4 740 -490 NJ -490 NJ -490 2020
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 7 0 300 NJ 300 NJ 300 NJ 300 NJ 270 NJ 110 2530
+preplace netloc axi_mem_intercon_M00_AXI 1 5 1 2090
+preplace netloc rst_processing_system7_0_50M_peripheral_aresetn 1 1 4 380 420 780 230 1230 320 1520
+preplace netloc processing_system7_0_axi_periph_M02_AXI 1 2 1 720
+preplace netloc processing_system7_0_axi_periph_M06_AXI 1 2 3 730 -420 NJ -420 NJ
+preplace netloc axi_dma_0_M_AXI_MM2S 1 4 2 1550 -240 2020
+preplace netloc xlconcat_0_dout 1 3 1 1220
 preplace netloc processing_system7_0_FIXED_IO 1 6 1 NJ
-preplace netloc axi_dma_0_mm2s_introut 1 2 3 710 30 NJ 30 1550
-preplace netloc axi_dma_0_M_AXI_S2MM 1 4 1 N
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 7 10 730 370 750 750 420 1170 140 1570 240 1940 340 2410
-preplace netloc fpga2ddr_0_o_stream 1 3 1 1200
-preplace netloc axi_dma_0_M_AXIS_MM2S 1 4 1 1560
-preplace netloc axi_intc_0_irq 1 4 2 NJ 220 1930
-preplace netloc processing_system7_0_axi_periph_M04_AXI 1 2 2 720 190 NJ
-preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 2 730 580 NJ
-levelinfo -pg 1 -20 190 560 960 1370 1760 2190 2440 -top -140 -bot 910
+preplace netloc axi_dma_2_mm2s_introut 1 2 4 750 -270 NJ -270 NJ -270 2040
+preplace netloc axi_dma_0_mm2s_introut 1 2 4 770 -280 NJ -280 NJ -280 2030
+preplace netloc axi_dma_2_M_AXI_MM2S 1 4 2 1560 710 2020
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 7 10 910 360 410 770 140 1230 140 1510 230 2080 130 2520
+preplace netloc axi_dma_2_M_AXIS_MM2S 1 4 2 1560 920 2010
+preplace netloc fpga2ddr_0_o_stream 1 3 2 1230 -400 NJ
+preplace netloc axi_dma_0_M_AXIS_MM2S 1 4 2 1560 -220 2010
+preplace netloc axi_intc_0_irq 1 4 2 NJ 220 2070
+preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 3 710 -300 NJ -300 NJ
+preplace netloc processing_system7_0_axi_periph_M04_AXI 1 2 2 750 190 NJ
+levelinfo -pg 1 -20 190 560 1020 1390 1840 2300 2550 -top -560 -bot 1210
 ",
 }
 

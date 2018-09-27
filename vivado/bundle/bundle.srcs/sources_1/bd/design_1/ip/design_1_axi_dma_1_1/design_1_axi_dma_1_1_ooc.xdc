@@ -1,4 +1,3 @@
-# file: design_1_axi_dma_0_0.xdc
 # (c) Copyright 2009 - 2013 Xilinx, Inc. All rights reserved.
 # 
 # This file contains confidential and proprietary information
@@ -44,3 +43,12 @@
 # 
 # THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
 # PART OF THIS FILE AT ALL TIMES.
+
+
+# This XDC is used only for OOC mode of synthesis, implementation
+# User should update the correct clock period before proceeding further
+
+ create_clock -name all_clock -period 10 [get_ports {s_axi_lite_aclk  m_axi_s2mm_aclk }]
+## set_property HD.CLK_SRC BUFGCTRL_X0Y0 [get_ports s_axi_lite_aclk]
+# create_clock -name m_axi_s2mm_aclk -period 10 [get_ports m_axi_s2mm_aclk]
+## set_property HD.CLK_SRC BUFGCTRL_X0Y2 [get_ports m_axi_s2mm_aclk]
