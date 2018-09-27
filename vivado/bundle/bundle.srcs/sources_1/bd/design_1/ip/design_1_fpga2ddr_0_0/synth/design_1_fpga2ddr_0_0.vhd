@@ -52,10 +52,11 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
+use work.bundlepack.all;
 
 ENTITY design_1_fpga2ddr_0_0 IS
   PORT (
-    o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
     mem_V_ce0 : OUT STD_LOGIC;
     s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
     s_axi_ctrl_AWVALID : IN STD_LOGIC;
@@ -86,8 +87,8 @@ ENTITY design_1_fpga2ddr_0_0 IS
     o_stream_TUSER : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
     o_stream_TLAST : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
     o_stream_TID : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-    mem_V_address0 : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-    mem_V_q0 : IN STD_LOGIC_VECTOR(63 DOWNTO 0)
+    mem_V_address0 : OUT STD_LOGIC_VECTOR(MEM_DEPTH_BITNB - 1 DOWNTO 0);
+    mem_V_q0 : IN STD_LOGIC_VECTOR(MEM_WIDTH - 1 DOWNTO 0)
   );
 END design_1_fpga2ddr_0_0;
 
@@ -100,7 +101,7 @@ ARCHITECTURE design_1_fpga2ddr_0_0_arch OF design_1_fpga2ddr_0_0 IS
       C_S_AXI_CTRL_DATA_WIDTH : INTEGER
     );
     PORT (
-      o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+      o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
       mem_V_ce0 : OUT STD_LOGIC;
       s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
       s_axi_ctrl_AWVALID : IN STD_LOGIC;
@@ -131,8 +132,8 @@ ARCHITECTURE design_1_fpga2ddr_0_0_arch OF design_1_fpga2ddr_0_0 IS
       o_stream_TUSER : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
       o_stream_TLAST : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
       o_stream_TID : OUT STD_LOGIC_VECTOR(0 DOWNTO 0);
-      mem_V_address0 : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-      mem_V_q0 : IN STD_LOGIC_VECTOR(63 DOWNTO 0)
+      mem_V_address0 : OUT STD_LOGIC_VECTOR(MEM_DEPTH_BITNB - 1 DOWNTO 0);
+      mem_V_q0 : IN STD_LOGIC_VECTOR(MEM_WIDTH - 1 DOWNTO 0)
     );
   END COMPONENT fpga2ddr;
   ATTRIBUTE X_CORE_INFO : STRING;

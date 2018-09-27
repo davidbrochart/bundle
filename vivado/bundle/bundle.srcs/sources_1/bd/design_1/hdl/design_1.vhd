@@ -3293,7 +3293,7 @@ architecture STRUCTURE of design_1 is
   end component design_1_axi_dma_0_0;
   component design_1_ddr2fpga_0_0 is
   port (
-    o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
     mem_V_ce0 : out STD_LOGIC;
     mem_V_we0 : out STD_LOGIC;
     s_axi_ctrl_AWADDR : in STD_LOGIC_VECTOR ( 4 downto 0 );
@@ -3325,13 +3325,13 @@ architecture STRUCTURE of design_1 is
     i_stream_TUSER : in STD_LOGIC_VECTOR ( 0 to 0 );
     i_stream_TLAST : in STD_LOGIC_VECTOR ( 0 to 0 );
     i_stream_TID : in STD_LOGIC_VECTOR ( 0 to 0 );
-    mem_V_address0 : out STD_LOGIC_VECTOR ( 9 downto 0 );
-    mem_V_d0 : out STD_LOGIC_VECTOR ( 63 downto 0 )
+    mem_V_address0 : out STD_LOGIC_VECTOR (MEM_DEPTH_BITNB - 1 downto 0 );
+    mem_V_d0 : out STD_LOGIC_VECTOR (MEM_WIDTH - 1 downto 0 )
   );
   end component design_1_ddr2fpga_0_0;
   component design_1_fpga2ddr_0_0 is
   port (
-    o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
     mem_V_ce0 : out STD_LOGIC;
     s_axi_ctrl_AWADDR : in STD_LOGIC_VECTOR ( 4 downto 0 );
     s_axi_ctrl_AWVALID : in STD_LOGIC;
@@ -3362,16 +3362,16 @@ architecture STRUCTURE of design_1 is
     o_stream_TUSER : out STD_LOGIC_VECTOR ( 0 to 0 );
     o_stream_TLAST : out STD_LOGIC_VECTOR ( 0 to 0 );
     o_stream_TID : out STD_LOGIC_VECTOR ( 0 to 0 );
-    mem_V_address0 : out STD_LOGIC_VECTOR ( 9 downto 0 );
-    mem_V_q0 : in STD_LOGIC_VECTOR ( 63 downto 0 )
+    mem_V_address0 : out STD_LOGIC_VECTOR (MEM_DEPTH_BITNB - 1 downto 0 );
+    mem_V_q0 : in STD_LOGIC_VECTOR (MEM_WIDTH - 1 downto 0 )
   );
   end component design_1_fpga2ddr_0_0;
   component design_1_iterator_0_0 is
   port (
-    o_func_i : out STD_LOGIC_VECTOR (0 downto 0);
-    o_rmem0_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_rmem1_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_wmem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_func_i : out STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+    o_rmem0_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_rmem1_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_wmem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
 
     i_res_valid : in  std_logic;
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);

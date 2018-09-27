@@ -8,6 +8,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
+use work.bundlepack.all;
 
 entity fpga2ddr_ctrl_s_axi is
 generic (
@@ -41,8 +42,8 @@ port (
     ap_done               :in   STD_LOGIC;
     ap_ready              :in   STD_LOGIC;
     ap_idle               :in   STD_LOGIC;
-    mem_i_V               :out  STD_LOGIC_VECTOR(1 downto 0);
-    data_nb_V             :out  STD_LOGIC_VECTOR(10 downto 0)
+    mem_i_V               :out  STD_LOGIC_VECTOR(MEM_BITNB - 1 downto 0);
+    data_nb_V             :out  STD_LOGIC_VECTOR(MEM_DEPTH_BITNB downto 0)
 );
 end entity fpga2ddr_ctrl_s_axi;
 
@@ -108,8 +109,8 @@ architecture behave of fpga2ddr_ctrl_s_axi is
     signal int_gie             : STD_LOGIC;
     signal int_ier             : UNSIGNED(1 downto 0);
     signal int_isr             : UNSIGNED(1 downto 0);
-    signal int_mem_i_V         : UNSIGNED(1 downto 0);
-    signal int_data_nb_V       : UNSIGNED(10 downto 0);
+    signal int_mem_i_V         : UNSIGNED(MEM_BITNB - 1 downto 0);
+    signal int_data_nb_V       : UNSIGNED(MEM_DEPTH_BITNB downto 0);
 
 
 begin

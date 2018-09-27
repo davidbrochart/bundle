@@ -56,10 +56,10 @@ use work.bundlepack.all;
 
 ENTITY design_1_iterator_0_0 IS
   PORT (
-    o_func_i : out STD_LOGIC_VECTOR (0 downto 0);
-    o_rmem0_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_rmem1_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_wmem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_func_i : out STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+    o_rmem0_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_rmem1_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_wmem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
 
     i_res_valid : in  std_logic;
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
@@ -100,10 +100,10 @@ ARCHITECTURE design_1_iterator_0_0_arch OF design_1_iterator_0_0 IS
       C_S_AXI_CTRL_DATA_WIDTH : INTEGER
     );
     PORT (
-    o_func_i : out STD_LOGIC_VECTOR (0 downto 0);
-    o_rmem0_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_rmem1_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_wmem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_func_i : out STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+    o_rmem0_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_rmem1_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_wmem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
 
     i_res_valid : in  std_logic;
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);

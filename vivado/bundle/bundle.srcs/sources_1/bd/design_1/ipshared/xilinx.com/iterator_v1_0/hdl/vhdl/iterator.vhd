@@ -15,10 +15,10 @@ generic (
     C_S_AXI_CTRL_ADDR_WIDTH : INTEGER := 6;
     C_S_AXI_CTRL_DATA_WIDTH : INTEGER := 32 );
 port (
-    o_func_i : out STD_LOGIC_VECTOR (0 downto 0);
-    o_rmem0_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_rmem1_i : out STD_LOGIC_VECTOR (1 downto 0);
-    o_wmem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_func_i : out STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+    o_rmem0_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_rmem1_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    o_wmem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
 
     i_res_valid : in  std_logic;
     o_raddr     : out std_logic_vector(MEM_DEPTH_BITNB - 1 downto 0);
@@ -69,11 +69,11 @@ architecture behav of iterator is
     signal ap_done : STD_LOGIC;
     signal ap_idle : STD_LOGIC;
     signal ap_ready : STD_LOGIC;
-    signal func_i_V : STD_LOGIC_VECTOR (0 downto 0);
-    signal rmem0_i_V : STD_LOGIC_VECTOR (1 downto 0);
-    signal rmem1_i_V : STD_LOGIC_VECTOR (1 downto 0);
-    signal wmem_i_V : STD_LOGIC_VECTOR (1 downto 0);
-    signal data_nb_V : STD_LOGIC_VECTOR (10 downto 0);
+    signal func_i_V : STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+    signal rmem0_i_V : STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    signal rmem1_i_V : STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    signal wmem_i_V : STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    signal data_nb_V : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal ap_rst_n_inv : STD_LOGIC;
 
     component iterator_ctrl_s_axi IS
@@ -106,11 +106,11 @@ architecture behav of iterator is
         ap_ready : IN STD_LOGIC;
         ap_done : IN STD_LOGIC;
         ap_idle : IN STD_LOGIC;
-        func_i_V : OUT STD_LOGIC_VECTOR (0 downto 0);
-        rmem0_i_V : OUT STD_LOGIC_VECTOR (1 downto 0);
-        rmem1_i_V : OUT STD_LOGIC_VECTOR (1 downto 0);
-        wmem_i_V : OUT STD_LOGIC_VECTOR (1 downto 0);
-        data_nb_V : OUT STD_LOGIC_VECTOR (10 downto 0) );
+        func_i_V : OUT STD_LOGIC_VECTOR (FUNC_BITNB - 1 downto 0);
+        rmem0_i_V : OUT STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+        rmem1_i_V : OUT STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+        wmem_i_V : OUT STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+        data_nb_V : OUT STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) );
     end component;
 
 

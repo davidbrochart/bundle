@@ -8,6 +8,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
+use work.bundlepack.all;
 
 entity iterator_ctrl_s_axi is
 generic (
@@ -41,11 +42,11 @@ port (
     ap_done               :in   STD_LOGIC;
     ap_ready              :in   STD_LOGIC;
     ap_idle               :in   STD_LOGIC;
-    func_i_V              :out  STD_LOGIC_VECTOR(0 downto 0);
-    rmem0_i_V             :out  STD_LOGIC_VECTOR(1 downto 0);
-    rmem1_i_V             :out  STD_LOGIC_VECTOR(1 downto 0);
-    wmem_i_V              :out  STD_LOGIC_VECTOR(1 downto 0);
-    data_nb_V             :out  STD_LOGIC_VECTOR(10 downto 0)
+    func_i_V              :out  STD_LOGIC_VECTOR(FUNC_BITNB - 1 downto 0);
+    rmem0_i_V             :out  STD_LOGIC_VECTOR(MEM_BITNB - 1 downto 0);
+    rmem1_i_V             :out  STD_LOGIC_VECTOR(MEM_BITNB - 1 downto 0);
+    wmem_i_V              :out  STD_LOGIC_VECTOR(MEM_BITNB - 1 downto 0);
+    data_nb_V             :out  STD_LOGIC_VECTOR(MEM_DEPTH_BITNB downto 0)
 );
 end entity iterator_ctrl_s_axi;
 
@@ -127,11 +128,11 @@ architecture behave of iterator_ctrl_s_axi is
     signal int_gie             : STD_LOGIC;
     signal int_ier             : STD_LOGIC;
     signal int_isr             : STD_LOGIC;
-    signal int_func_i_V        : UNSIGNED(0 downto 0);
-    signal int_rmem0_i_V       : UNSIGNED(1 downto 0);
-    signal int_rmem1_i_V       : UNSIGNED(1 downto 0);
-    signal int_wmem_i_V        : UNSIGNED(1 downto 0);
-    signal int_data_nb_V       : UNSIGNED(10 downto 0);
+    signal int_func_i_V        : UNSIGNED(FUNC_BITNB - 1 downto 0);
+    signal int_rmem0_i_V       : UNSIGNED(MEM_BITNB - 1 downto 0);
+    signal int_rmem1_i_V       : UNSIGNED(MEM_BITNB - 1 downto 0);
+    signal int_wmem_i_V        : UNSIGNED(MEM_BITNB - 1 downto 0);
+    signal int_data_nb_V       : UNSIGNED(MEM_DEPTH_BITNB downto 0);
 
 
 begin

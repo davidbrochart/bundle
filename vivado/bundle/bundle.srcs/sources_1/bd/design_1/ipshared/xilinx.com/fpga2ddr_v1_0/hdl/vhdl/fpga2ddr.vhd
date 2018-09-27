@@ -8,13 +8,14 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+use work.bundlepack.all;
 
 entity fpga2ddr is
 generic (
     C_S_AXI_CTRL_ADDR_WIDTH : INTEGER := 5;
     C_S_AXI_CTRL_DATA_WIDTH : INTEGER := 32 );
 port (
-    o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
     ap_clk : IN STD_LOGIC;
     ap_rst_n : IN STD_LOGIC;
     o_stream_TDATA : OUT STD_LOGIC_VECTOR (63 downto 0);
@@ -26,9 +27,9 @@ port (
     o_stream_TLAST : OUT STD_LOGIC_VECTOR (0 downto 0);
     o_stream_TID : OUT STD_LOGIC_VECTOR (0 downto 0);
     o_stream_TDEST : OUT STD_LOGIC_VECTOR (0 downto 0);
-    mem_V_address0 : OUT STD_LOGIC_VECTOR (9 downto 0);
+    mem_V_address0 : OUT STD_LOGIC_VECTOR (MEM_DEPTH_BITNB - 1 downto 0);
     mem_V_ce0 : OUT STD_LOGIC;
-    mem_V_q0 : IN STD_LOGIC_VECTOR (63 downto 0);
+    mem_V_q0 : IN STD_LOGIC_VECTOR (MEM_WIDTH - 1 downto 0);
     s_axi_ctrl_AWVALID : IN STD_LOGIC;
     s_axi_ctrl_AWREADY : OUT STD_LOGIC;
     s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR (C_S_AXI_CTRL_ADDR_WIDTH-1 downto 0);
@@ -65,10 +66,10 @@ architecture behav of fpga2ddr is
     constant C_S_AXI_DATA_WIDTH : INTEGER range 63 downto 0 := 20;
     constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
-    constant ap_const_lv11_0 : STD_LOGIC_VECTOR (10 downto 0) := "00000000000";
+    constant ap_const_lv11_0 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) := "00000000000";
     constant ap_const_lv8_FF : STD_LOGIC_VECTOR (7 downto 0) := "11111111";
-    constant ap_const_lv12_FFF : STD_LOGIC_VECTOR (11 downto 0) := "111111111111";
-    constant ap_const_lv11_1 : STD_LOGIC_VECTOR (10 downto 0) := "00000000001";
+    constant ap_const_lv12_FFF : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB + 1 downto 0) := "111111111111";
+    constant ap_const_lv11_1 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) := "00000000001";
 
     signal ap_rst_n_inv : STD_LOGIC;
     signal ap_start : STD_LOGIC;
@@ -80,27 +81,27 @@ architecture behav of fpga2ddr is
     signal ap_sig_cseq_ST_st1_fsm_0 : STD_LOGIC;
     signal ap_sig_20 : BOOLEAN;
     signal ap_ready : STD_LOGIC;
-    signal mem_i_V : STD_LOGIC_VECTOR (1 downto 0);
-    signal data_nb_V : STD_LOGIC_VECTOR (10 downto 0);
+    signal mem_i_V : STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    signal data_nb_V : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal o_stream_TDATA_blk_n : STD_LOGIC;
     signal ap_sig_cseq_ST_st3_fsm_2 : STD_LOGIC;
     signal ap_sig_50 : BOOLEAN;
-    signal data_nb_V_read_reg_149 : STD_LOGIC_VECTOR (10 downto 0);
-    signal r_V_fu_118_p2 : STD_LOGIC_VECTOR (11 downto 0);
-    signal r_V_reg_154 : STD_LOGIC_VECTOR (11 downto 0);
-    signal i_V_fu_129_p2 : STD_LOGIC_VECTOR (10 downto 0);
-    signal i_V_reg_162 : STD_LOGIC_VECTOR (10 downto 0);
+    signal data_nb_V_read_reg_149 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
+    signal r_V_fu_118_p2 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB + 1 downto 0);
+    signal r_V_reg_154 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB + 1 downto 0);
+    signal i_V_fu_129_p2 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
+    signal i_V_reg_162 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal ap_sig_cseq_ST_st2_fsm_1 : STD_LOGIC;
     signal ap_sig_102 : BOOLEAN;
     signal exitcond_fu_124_p2 : STD_LOGIC_VECTOR (0 downto 0);
     signal r_ostream_last_V_fu_144_p2 : STD_LOGIC_VECTOR (0 downto 0);
     signal r_ostream_last_V_reg_172 : STD_LOGIC_VECTOR (0 downto 0);
-    signal p_s_reg_103 : STD_LOGIC_VECTOR (10 downto 0);
+    signal p_s_reg_103 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal ap_sig_ioackin_o_stream_TREADY : STD_LOGIC;
     signal tmp_1_fu_135_p1 : STD_LOGIC_VECTOR (63 downto 0);
     signal ap_reg_ioackin_o_stream_TREADY : STD_LOGIC := '0';
-    signal lhs_V_cast_fu_114_p1 : STD_LOGIC_VECTOR (11 downto 0);
-    signal tmp_4_cast_fu_140_p1 : STD_LOGIC_VECTOR (11 downto 0);
+    signal lhs_V_cast_fu_114_p1 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB + 1 downto 0);
+    signal tmp_4_cast_fu_140_p1 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB + 1 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (2 downto 0);
 
     component fpga2ddr_ctrl_s_axi IS
@@ -133,8 +134,8 @@ architecture behav of fpga2ddr is
         ap_ready : IN STD_LOGIC;
         ap_done : IN STD_LOGIC;
         ap_idle : IN STD_LOGIC;
-        mem_i_V : OUT STD_LOGIC_VECTOR (1 downto 0);
-        data_nb_V : OUT STD_LOGIC_VECTOR (10 downto 0) );
+        mem_i_V : OUT STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+        data_nb_V : OUT STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) );
     end component;
 
 

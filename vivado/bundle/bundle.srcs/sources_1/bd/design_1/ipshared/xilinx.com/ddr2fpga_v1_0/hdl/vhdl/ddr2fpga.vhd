@@ -8,13 +8,14 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+use work.bundlepack.all;
 
 entity ddr2fpga is
 generic (
     C_S_AXI_CTRL_ADDR_WIDTH : INTEGER := 5;
     C_S_AXI_CTRL_DATA_WIDTH : INTEGER := 32 );
 port (
-    o_mem_i : out STD_LOGIC_VECTOR (1 downto 0);
+    o_mem_i : out STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
     ap_clk : IN STD_LOGIC;
     ap_rst_n : IN STD_LOGIC;
     i_stream_TDATA : IN STD_LOGIC_VECTOR (63 downto 0);
@@ -26,10 +27,10 @@ port (
     i_stream_TLAST : IN STD_LOGIC_VECTOR (0 downto 0);
     i_stream_TID : IN STD_LOGIC_VECTOR (0 downto 0);
     i_stream_TDEST : IN STD_LOGIC_VECTOR (0 downto 0);
-    mem_V_address0 : OUT STD_LOGIC_VECTOR (9 downto 0);
+    mem_V_address0 : OUT STD_LOGIC_VECTOR (MEM_DEPTH_BITNB - 1 downto 0);
     mem_V_ce0 : OUT STD_LOGIC;
     mem_V_we0 : OUT STD_LOGIC;
-    mem_V_d0 : OUT STD_LOGIC_VECTOR (63 downto 0);
+    mem_V_d0 : OUT STD_LOGIC_VECTOR (MEM_WIDTH - 1 downto 0);
     s_axi_ctrl_AWVALID : IN STD_LOGIC;
     s_axi_ctrl_AWREADY : OUT STD_LOGIC;
     s_axi_ctrl_AWADDR : IN STD_LOGIC_VECTOR (C_S_AXI_CTRL_ADDR_WIDTH-1 downto 0);
@@ -64,8 +65,8 @@ architecture behav of ddr2fpga is
     constant ap_const_lv32_1 : STD_LOGIC_VECTOR (31 downto 0) := "00000000000000000000000000000001";
     constant ap_const_lv1_0 : STD_LOGIC_VECTOR (0 downto 0) := "0";
     constant C_S_AXI_DATA_WIDTH : INTEGER range 63 downto 0 := 20;
-    constant ap_const_lv11_0 : STD_LOGIC_VECTOR (10 downto 0) := "00000000000";
-    constant ap_const_lv11_1 : STD_LOGIC_VECTOR (10 downto 0) := "00000000001";
+    constant ap_const_lv11_0 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) := "00000000000";
+    constant ap_const_lv11_1 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) := "00000000001";
 
     signal ap_rst_n_inv : STD_LOGIC;
     signal ap_start : STD_LOGIC;
@@ -77,16 +78,16 @@ architecture behav of ddr2fpga is
     signal ap_sig_cseq_ST_st1_fsm_0 : STD_LOGIC;
     signal ap_sig_19 : BOOLEAN;
     signal ap_ready : STD_LOGIC;
-    signal mem_i_V : STD_LOGIC_VECTOR (1 downto 0);
-    signal data_nb_V : STD_LOGIC_VECTOR (10 downto 0);
+    signal mem_i_V : STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+    signal data_nb_V : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal i_stream_TDATA_blk_n : STD_LOGIC;
     signal ap_sig_cseq_ST_st2_fsm_1 : STD_LOGIC;
     signal ap_sig_50 : BOOLEAN;
     signal exitcond_fu_95_p2 : STD_LOGIC_VECTOR (0 downto 0);
-    signal data_nb_V_read_reg_116 : STD_LOGIC_VECTOR (10 downto 0);
-    signal i_V_fu_100_p2 : STD_LOGIC_VECTOR (10 downto 0);
+    signal data_nb_V_read_reg_116 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
+    signal i_V_fu_100_p2 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal ap_sig_101 : BOOLEAN;
-    signal p_s_reg_84 : STD_LOGIC_VECTOR (10 downto 0);
+    signal p_s_reg_84 : STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0);
     signal tmp_2_fu_111_p1 : STD_LOGIC_VECTOR (63 downto 0);
     signal ap_NS_fsm : STD_LOGIC_VECTOR (1 downto 0);
 
@@ -120,8 +121,8 @@ architecture behav of ddr2fpga is
         ap_ready : IN STD_LOGIC;
         ap_done : IN STD_LOGIC;
         ap_idle : IN STD_LOGIC;
-        mem_i_V : OUT STD_LOGIC_VECTOR (1 downto 0);
-        data_nb_V : OUT STD_LOGIC_VECTOR (10 downto 0) );
+        mem_i_V : OUT STD_LOGIC_VECTOR (MEM_BITNB - 1 downto 0);
+        data_nb_V : OUT STD_LOGIC_VECTOR (MEM_DEPTH_BITNB downto 0) );
     end component;
 
 
