@@ -8,7 +8,6 @@ class ddr2fpga(Module):
         self.r_addr     = Reg()
         self.r_wena     = Reg()
         self.r_done     = Reg()
-        self.r_ptr_i    = Reg()
 
         # I/O
         self.array_ptr  = None
@@ -19,9 +18,6 @@ class ddr2fpga(Module):
         self.o_done     = Out()
 
     def logic(self):
-        self.o_mem_addr.d = 0
-        self.o_mem_wena.d = 0
-        self.o_mem_din.d = 0
         if self.r_state.q == self.IDLE:
             if self.i_data_nb.d != 0:
                 self.r_state.d = self.COUNTING
@@ -30,8 +26,8 @@ class ddr2fpga(Module):
             if self.r_addr.q == self.i_data_nb.d - 1:
                 self.r_state.d = self.COMPLETE
                 self.r_wena.d = 0
-                self.r_done.d = 1
                 self.r_addr.d = 0
+                self.r_done.d = 1
             else:
                 self.r_addr.d = self.r_addr.q + 1
         elif self.r_state.q == self.COMPLETE:
@@ -41,13 +37,10 @@ class ddr2fpga(Module):
         else:
             self.r_state.d = self.IDLE
 
-        if self.i_data_nb.d != 0:
-            self.o_mem_addr.d = self.r_addr.q
-            self.o_mem_wena.d = 1
-            if self.r_wena.q == 1:
-                if self.r_ptr_i.q == self.i_data_nb.d - 1:
-                    self.r_ptr_i.d = 0
-                else:
-                    self.r_ptr_i.d = self.r_ptr_i.q + 1
-            self.o_mem_din.d = self.array_ptr[self.r_ptr_i.q]
+        self.o_mem_addr.d = self.r_addr.q
+        self.o_mem_wena.d = self.r_wena.q
+        if self.r_wena.q == 1:
+            self.o_mem_din.d = self.array_ptr[self.r_addr.q]
+        else:
+            self.o_mem_din.d = 0
         self.o_done.d = self.r_done.q

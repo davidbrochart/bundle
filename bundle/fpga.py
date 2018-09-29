@@ -161,12 +161,12 @@ class FPGA(Module):
             self.s_mem_din[i].d  = 0
             self.s_mem_wena[i].d = 0
         for i in range(self.fpga2ddr_nb):
-            self.s_mem_addr[self.s_fpga2ddr_mem_i[i].d].d       += self.s_fpga2ddr_addr[i].d
+            self.s_mem_addr[self.s_fpga2ddr_mem_i[i].d].d       |= self.s_fpga2ddr_addr[i].d
             self.s_fpga2ddr_mem_dout[i].d                        = self.s_mem_dout[self.s_fpga2ddr_mem_i[i].d].d
         for i in range(self.ddr2fpga_nb):
-            self.s_mem_wena[self.s_ddr2fpga_mem_i[i].d].d       += self.s_ddr2fpga_wena[i].d
-            self.s_mem_addr[self.s_ddr2fpga_mem_i[i].d].d       += self.s_ddr2fpga_addr[i].d
-            self.s_mem_din[self.s_ddr2fpga_mem_i[i].d].d        += self.s_ddr2fpga_din[i].d
+            self.s_mem_wena[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_wena[i].d
+            self.s_mem_addr[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_addr[i].d
+            self.s_mem_din[self.s_ddr2fpga_mem_i[i].d].d        |= self.s_ddr2fpga_din[i].d
 
         # memory <-> iterator <-> function
         for i in range(self.func_nb):
@@ -174,16 +174,17 @@ class FPGA(Module):
             self.s_func_arg0[i].d = 0
             self.s_func_arg1[i].d = 0
         for i in range(self.iter_nb):
-            self.s_mem_addr[self.s_iter_rmem0_i[i].d].d         += self.s_iter_raddr[i].d
-            self.s_mem_addr[self.s_iter_rmem1_i[i].d].d         += self.s_iter_raddr[i].d
-            self.s_mem_addr[self.s_iter_wmem_i[i].d].d          += self.s_iter_waddr[i].d
-            self.s_mem_wena[self.s_iter_wmem_i[i].d].d          += self.s_iter_wena[i].d
-            self.s_mem_din[self.s_iter_wmem_i[i].d].d           += self.s_func_res[self.s_iter_func_i[i].d].d
-            self.s_func_arg_valid[self.s_iter_func_i[i].d].d    += self.s_iter_arg_valid[i].d
-            if self.s_iter_arg_valid[i].d == 1:
-                self.s_func_arg0[self.s_iter_func_i[i].d].d     += self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
-                self.s_func_arg1[self.s_iter_func_i[i].d].d     += self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
+            self.s_mem_addr[self.s_iter_rmem0_i[i].d].d         |= self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_rmem1_i[i].d].d         |= self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_wmem_i[i].d].d          |= self.s_iter_waddr[i].d
+            self.s_mem_wena[self.s_iter_wmem_i[i].d].d          |= self.s_iter_wena[i].d
+            self.s_func_arg_valid[self.s_iter_func_i[i].d].d    |= self.s_iter_arg_valid[i].d
             self.s_iter_res_valid[i].d                           = self.s_func_res_valid[self.s_iter_func_i[i].d].d
+            if self.s_iter_data_nb[i].d != 0:
+                self.s_mem_din[self.s_iter_wmem_i[i].d].d       |= self.s_func_res[self.s_iter_func_i[i].d].d
+            if self.s_iter_arg_valid[i].d == 1:
+                self.s_func_arg0[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
+                self.s_func_arg1[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb

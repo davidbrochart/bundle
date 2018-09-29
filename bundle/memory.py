@@ -16,5 +16,5 @@ class memory(Module):
     def logic(self):
         self.r_dout.d = self.ram[self.i_addr.d]
         if self.i_wena.d == 1:
-            self.ram[self.i_addr.d] = self.i_din.d
+            self.ram[self.i_addr.d] = int(self.i_din.d)
         self.o_dout.d = self.r_dout.q

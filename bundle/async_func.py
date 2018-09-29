@@ -13,7 +13,7 @@ async def ddr2fpga(chunk_array, nbytes, mem_i, fpga, await_tasks=[], debug=False
     await fpga.ddr2fpga_done(ddr2fpga_i)
     fpga.state.ddr2fpga_free(ddr2fpga_i)
     if debug:
-        print(f'ddr2fpga done (mem_i = {mem_i})')
+        print(f'ddr2fpga done (mem_i = {mem_i}, ddr2fpga_i = {ddr2fpga_i})')
 
 async def fpga2ddr(chunk_array, array_ptr, nbytes, mem_i, fpga, free_mem, await_tasks=[], debug=False):
     for t in await_tasks:
@@ -34,13 +34,13 @@ async def fpga2ddr(chunk_array, array_ptr, nbytes, mem_i, fpga, free_mem, await_
     fpga.state.fpga2ddr_free(fpga2ddr_i)
     fpga.state.mem_free(mem_i)
     if debug:
-        print(f'fpga2ddr done (mem_i = {mem_i})')
+        print(f'fpga2ddr done (mem_i = {mem_i}, fpga2ddr_i = {fpga2ddr_i})')
 
 async def binary_func(func, nbytes, mem_i0, mem_i1, mem_i2, fpga, await_tasks=[], debug=False):
     for t in await_tasks:
         await t
     if debug:
-        print(f'binary_func({func}) start')
+        print(f'binary_func({func}) start (mem_i0 = {mem_i0}, mem_i1 = {mem_i1}, mem_i2 = {mem_i2})')
     while fpga.state.free_func_nb[func] == 0:
         await fpga.state.func_freed[func].wait()
         fpga.state.func_freed[func].clear()
@@ -55,4 +55,4 @@ async def binary_func(func, nbytes, mem_i0, mem_i1, mem_i2, fpga, await_tasks=[]
     fpga.state.func_free(func, func_i)
     fpga.state.iter_free(iter_i)
     if debug:
-        print(f'binary_func({func}) done')
+        print(f'binary_func({func}) done (mem_i0 = {mem_i0}, mem_i1 = {mem_i1}, mem_i2 = {mem_i2})')

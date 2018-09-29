@@ -6,8 +6,9 @@ class PYNQ(object):
     def __init__(self, fpga_config, overlay):
         self.u_ddr2fpga = [overlay.__getattr__(f'ddr2fpga_{i}') for i in range(fpga_config.config['ddr2fpga_nb'])]
         self.u_fpga2ddr = [overlay.__getattr__(f'fpga2ddr_{i}') for i in range(fpga_config.config['fpga2ddr_nb'])]
-        #self.u_axi_dma_ddr2fpga = [overlay.__getattr__(f'axi_dma_{i}') for i in range(fpga_config.config['ddr2fpga_nb'])]
-        #self.u_axi_dma_fpga2ddr = [overlay.__getattr__(f'axi_dma_{i}') for i in range(fpga_config.config['fpga2ddr_nb'])]
+        j = fpga_config.config['ddr2fpga_nb']
+        self.u_axi_dma_ddr2fpga = [overlay.__getattr__(f'axi_dma_{i}') for i in range(j)]
+        self.u_axi_dma_fpga2ddr = [overlay.__getattr__(f'axi_dma_{i + j}') for i in range(fpga_config.config['fpga2ddr_nb'])]
         self.u_axi_dma_ddr2fpga = [overlay.axi_dma_0, overlay.axi_dma_2]
         self.u_axi_dma_fpga2ddr = [overlay.axi_dma_1]
         self.u_iter = [overlay.__getattr__(f'iterator_{i}') for i in range(fpga_config.config['iter_nb'])]
