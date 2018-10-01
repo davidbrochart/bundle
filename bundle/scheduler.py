@@ -2,15 +2,11 @@ import inspect
 import asyncio
 from .async_func import ddr2fpga, fpga2ddr, binary_func
 from .expression import Parser
-try:
-    from tqdm import tqdm
-except:
-    tqdm = None
 
 parser = Parser()
 event_loop = asyncio.get_event_loop()
 
-def evaluate(expression, fpga=None, toFpga=True, debug=False):
+def evaluate(expression, fpga=None, toFpga=True, debug=False, dashboard=None):
     frame = inspect.currentframe()
     try:
         out_locals = frame.f_back.f_locals
@@ -30,8 +26,6 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
     byte_nb = out_array.nbytes # remaining bytes
     remaining_tasks = []
     all_done = False
-    if (not debug) and tqdm:
-        pbar = tqdm(total=byte_nb)
     while not all_done:
         # this loop is done when all operations have been scheduled
         done = False
@@ -59,17 +53,17 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
                         for i in ii:
                             if (i < len(var)) and (t[i] is None):
                                 fpga.chunk_array[mem[i]][:idx1-idx0] = in_arrays[i][idx0:idx1]
-                                t[i] = asyncio.ensure_future(ddr2fpga(fpga.chunk_array[mem[i]], nbytes, mem[i], fpga, debug=debug))
+                                t[i] = asyncio.ensure_future(ddr2fpga(fpga.chunk_array[mem[i]], nbytes, mem[i], fpga, debug=debug, dashboard=dashboard))
                 for task in tasks:
                     if task[0] == binary_func:
                         func = task[1]
                         i0, i1, i2 = task[2:5]
                         await_tasks = [t[i0], t[i1]]
-                        t.append(asyncio.ensure_future(binary_func(func, nbytes, mem[i0], mem[i1], mem[i2], fpga, await_tasks, debug=debug)))
+                        t.append(asyncio.ensure_future(binary_func(func, nbytes, mem[i0], mem[i1], mem[i2], fpga, await_tasks, debug=debug, dashboard=dashboard)))
                 # last task is final operation, get its result memory
                 i = tasks[-1][4]
                 # and copy it back to DDR
-                t.append(asyncio.ensure_future(fpga2ddr(fpga.chunk_array[mem[i]], out_array[idx0:idx1], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug)))
+                t.append(asyncio.ensure_future(fpga2ddr(fpga.chunk_array[mem[i]], out_array[idx0:idx1], nbytes, mem[i], fpga, mem, [t[-1]], debug=debug, dashboard=dashboard)))
                 remaining_tasks += t
                 byte_nb -= nbytes
                 idx0 = idx1
@@ -92,8 +86,4 @@ def evaluate(expression, fpga=None, toFpga=True, debug=False):
             all_done = True
         finished, unfinished = event_loop.run_until_complete(asyncio.wait(remaining_tasks, return_when=when))
         remaining_tasks = list(unfinished)
-        if (not debug) and tqdm:
-            pbar.update(nbytes)
-    if (not debug) and tqdm:
-        pbar.close()
     return out_array
