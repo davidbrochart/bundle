@@ -60,9 +60,11 @@ async def binary_func(func, nbytes, mem_i0, mem_i1, mem_i2, fpga, await_tasks=[]
     fpga.op(iter_i, func_i, mem_i0, mem_i1, mem_i2, nbytes // 8)
     if dashboard:
         dashboard.set('iter', iter_i, fpga.time, True)
+        dashboard.set(func, func_i, fpga.time, True)
     await fpga.done(iter_i)
     if dashboard:
         dashboard.set('iter', iter_i, fpga.time, False)
+        dashboard.set(func, func_i, fpga.time, False)
     # free ressources
     fpga.state.func_free(func, func_i)
     fpga.state.iter_free(iter_i)
