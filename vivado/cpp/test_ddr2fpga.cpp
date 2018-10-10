@@ -6,11 +6,12 @@
 typedef ap_axiu <MEM_WIDTH, 1, 1, 1> AXI_T;
 typedef hls::stream<AXI_T> STREAM_T;
 
-void ddr2fpga(STREAM_T &i_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BITNB + 1> data_nb, ap_uint<MEM_WIDTH> mem[MEM_DEPTH]);
+void ddr2fpga(STREAM_T &i_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BITNB + 1> data_nb, ap_uint<MEM_WIDTH> mem[MEM_DEPTH], ap_uint<MEM_BITNB> &o_mem_i);
 
 int main() {
 	STREAM_T i_stream;
 	ap_uint<MEM_WIDTH> mem[MEM_DEPTH];
+	ap_uint<MEM_BITNB> o_mem_i;
 	ap_uint<MEM_DEPTH_BITNB + 1> data_nb = 256;
 	for (ap_int<MEM_DEPTH_BITNB + 1> i = 0; i < data_nb; i++) {
 		AXI_T r_istream;
@@ -27,7 +28,7 @@ int main() {
 		i_stream << r_istream;
 	}
 
-	ddr2fpga(i_stream, 0, data_nb, mem);
+	ddr2fpga(i_stream, 0, data_nb, mem, o_mem_i);
 
 	for (ap_int<MEM_DEPTH_BITNB + 1> i = 0; i < data_nb; i++) {
 		printf("Value is %d\n", (int)mem[i]);

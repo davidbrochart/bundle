@@ -6,7 +6,7 @@
 typedef ap_axiu <MEM_WIDTH, 1, 1, 1> AXI_T;
 typedef hls::stream<AXI_T> STREAM_T;
 
-void fpga2ddr(STREAM_T &o_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BITNB + 1> data_nb, ap_uint<MEM_WIDTH> mem[MEM_DEPTH]) {
+void fpga2ddr(STREAM_T &o_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BITNB + 1> data_nb, ap_uint<MEM_WIDTH> mem[MEM_DEPTH], ap_uint<MEM_BITNB> &o_mem_i) {
 #pragma HLS INTERFACE s_axilite port=mem_i bundle=ctrl
 #pragma HLS INTERFACE s_axilite port=data_nb bundle=ctrl
 #pragma HLS INTERFACE axis port=o_stream
@@ -23,4 +23,5 @@ void fpga2ddr(STREAM_T &o_stream, ap_uint<MEM_BITNB> mem_i, ap_uint<MEM_DEPTH_BI
         r_ostream.keep = 0xFF;
         o_stream << r_ostream;
     }
+    o_mem_i = mem_i;
 }
