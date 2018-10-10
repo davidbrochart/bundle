@@ -82,10 +82,6 @@ if { $list_projs eq "" } {
    set_property BOARD_PART www.digilentinc.com:pynq-z1:part0:1.0 [current_project]
 }
 
-read_vhdl -library xil_defaultlib {
-  /home/david/git/davidbrochart/bundle/vivado/bundle/bundle.srcs/sources_1/bd/design_1/hdl/bundlepack.vhd
-}
-
 # CHANGE DESIGN NAME HERE
 set design_name design_1
 
