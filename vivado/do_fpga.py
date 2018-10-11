@@ -17,9 +17,9 @@ func_bitnb      = int(ceil(log2(func_nb)))
 
 config.write_cpp(mem_width, mem_depth, mem_depth_bitnb)
 
-#call('cd ip; vivado_hls memory/solution1/script.tcl', shell=True)
-#call('cd ip; vivado_hls add/solution1/script.tcl', shell=True)
-#call('cd ip; vivado_hls mul/solution1/script.tcl', shell=True)
+call('cd ip; vivado_hls memory/solution1/script.tcl', shell=True)
+call('cd ip; vivado_hls add/solution1/script.tcl', shell=True)
+call('cd ip; vivado_hls mul/solution1/script.tcl', shell=True)
 
 # design_1_bd.tcl
 
@@ -1489,9 +1489,9 @@ design_tcl += '''
 
 set_property target_language VHDL [current_project]
 set_property ip_repo_paths { \
-        /home/david/git/davidbrochart/bundle/vivado/ip/memory/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/ip/add/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/ip/mul/solution1 \
+        ip/memory/solution1 \
+        ip/add/solution1 \
+        ip/mul/solution1 \
         } [current_project]
 update_ip_catalog -rebuild
 create_root_design ""
