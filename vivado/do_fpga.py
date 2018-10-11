@@ -1,35 +1,25 @@
 from math import ceil, log2
 from subprocess import call
-import crossbar, bundlepack, iterator
+import config
 
-ddr2fpga_nb = 4
-fpga2ddr_nb = 2
-iter_nb     = 2
-mem_nb      = iter_nb * 3
+mem_nb      = 3
 mem_width   = 64
 mem_depth   = 1024
-add_nb      = iter_nb
-mul_nb      = iter_nb
+ddr2fpga_nb = 2
+fpga2ddr_nb = 1
+add_nb      = 1
+mul_nb      = 1
 func_nb     = add_nb + mul_nb
 
-iter_bitnb      = int(ceil(log2(iter_nb)))
 mem_bitnb       = int(ceil(log2(mem_nb)))
 mem_depth_bitnb = int(ceil(log2(mem_depth)))
 func_bitnb      = int(ceil(log2(func_nb)))
 
-bundlepack.write_cpp(mem_nb, func_nb, fpga2ddr_nb, ddr2fpga_nb, iter_nb, mem_bitnb, mem_width, mem_depth, mem_depth_bitnb, func_bitnb, add_nb, mul_nb)
-crossbar.write_cpp(mem_nb, func_nb, fpga2ddr_nb, ddr2fpga_nb, iter_nb)
+config.write_cpp(mem_width, mem_depth, mem_depth_bitnb)
 
-call('vivado_hls ddr2fpga/solution1/script.tcl'.split())
-call('vivado_hls fpga2ddr/solution1/script.tcl'.split())
-call('vivado_hls memory/solution1/script.tcl'.split())
-call('vivado_hls add/solution1/script.tcl'.split())
-call('vivado_hls mul/solution1/script.tcl'.split())
-call('vivado_hls iterator/solution1/script.tcl'.split())
-call('vivado_hls crossbar/solution1/script.tcl'.split())
-
-crossbar.write_vhd(mem_nb, func_nb, fpga2ddr_nb, ddr2fpga_nb, iter_nb, mem_bitnb, mem_width, mem_depth, mem_depth_bitnb, func_bitnb, add_nb, mul_nb)
-iterator.write_vhd(mem_nb, func_nb, fpga2ddr_nb, ddr2fpga_nb, iter_nb, mem_bitnb, mem_width, mem_depth, mem_depth_bitnb, func_bitnb, add_nb, mul_nb)
+#call('cd ip; vivado_hls memory/solution1/script.tcl', shell=True)
+#call('cd ip; vivado_hls add/solution1/script.tcl', shell=True)
+#call('cd ip; vivado_hls mul/solution1/script.tcl', shell=True)
 
 # design_1_bd.tcl
 
@@ -78,7 +68,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project project_1 myproj -part xc7z020clg400-1 -force
+   create_project project_1 bundle -part xc7z020clg400-1 -force
    set_property BOARD_PART www.digilentinc.com:pynq-z1:part0:1.0 [current_project]
 }
 
@@ -204,7 +194,6 @@ CONFIG.c_include_s2mm {{0}} \\
 CONFIG.c_include_sg {{0}} \\
 CONFIG.c_m_axi_mm2s_data_width {{64}} \\
 CONFIG.c_m_axis_mm2s_tdata_width {{64}} \\
-CONFIG.c_micro_dma {{0}} \\
 CONFIG.c_mm2s_burst_size {{256}} \\
 CONFIG.c_sg_include_stscntrl_strm {{0}} \\
 CONFIG.c_sg_length_width {{23}} \\
@@ -220,7 +209,6 @@ for i in range(fpga2ddr_nb):
 CONFIG.c_include_mm2s {{0}} \\
 CONFIG.c_include_sg {{0}} \\
 CONFIG.c_m_axi_s2mm_data_width {{64}} \\
-CONFIG.c_micro_dma {{0}} \\
 CONFIG.c_s2mm_burst_size {{256}} \\
 CONFIG.c_sg_include_stscntrl_strm {{0}} \\
 CONFIG.c_sg_length_width {{23}} \\
@@ -235,32 +223,26 @@ design_tcl += f'''\
 CONFIG.C_IRQ_CONNECTION {{1}} \\
  ] $axi_intc_0
 
-  # Create instance: axi_mem_intercon, and set properties
-  set axi_mem_intercon [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_mem_intercon ]
+  # Create instance: axi_dma2ddr_intercon, and set properties
+  set axi_dma2ddr_intercon [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_dma2ddr_intercon ]
   set_property -dict [ list \\
 CONFIG.NUM_MI {{1}} \\
 CONFIG.NUM_SI { {ddr2fpga_nb + fpga2ddr_nb} } \\
- ] $axi_mem_intercon
+ ] $axi_dma2ddr_intercon
 
-'''
-for i in range(ddr2fpga_nb):
-    design_tcl += f'''\
-  # Create instance: ddr2fpga_{i}, and set properties
-  set ddr2fpga_{i} [ create_bd_cell -type ip -vlnv xilinx.com:hls:ddr2fpga:1.0 ddr2fpga_{i} ]
+  # Create instance: axis_dma2mem_intercon, and set properties
+  set axis_dma2mem_intercon [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_interconnect:2.1 axis_dma2mem_intercon ]
+  set_property -dict [ list \
+CONFIG.NUM_MI { {mem_nb + fpga2ddr_nb} } \
+CONFIG.NUM_SI { {mem_nb + ddr2fpga_nb} } \
+ ] $axis_dma2mem_intercon
 
-'''
-
-for i in range(fpga2ddr_nb):
-    design_tcl += f'''\
-  # Create instance: fpga2ddr_{i}, and set properties
-  set fpga2ddr_{i} [ create_bd_cell -type ip -vlnv xilinx.com:hls:fpga2ddr:1.0 fpga2ddr_{i} ]
-
-'''
-
-for i in range(iter_nb):
-    design_tcl += f'''\
-  # Create instance: iterator_{i}, and set properties
-  set iterator_{i} [ create_bd_cell -type ip -vlnv xilinx.com:hls:iterator:1.0 iterator_{i} ]
+  # Create instance: axis_mem2func_intercon, and set properties
+  set axis_mem2func_intercon [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_interconnect:2.1 axis_mem2func_intercon ]
+  set_property -dict [ list \
+CONFIG.NUM_MI { {2 * func_nb + mem_nb} } \
+CONFIG.NUM_SI { {mem_nb + func_nb} } \
+ ] $axis_mem2func_intercon
 
 '''
 
@@ -286,9 +268,6 @@ for i in range(mul_nb):
 '''
 
 design_tcl += '''\
-  # Create instance: crossbar_0, and set properties
-  set crossbar_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:crossbar:1.0 crossbar_0 ]
-
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \\
@@ -1265,7 +1244,7 @@ design_tcl += f'''\
   # Create instance: processing_system7_0_axi_periph, and set properties
   set processing_system7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 processing_system7_0_axi_periph ]
   set_property -dict [ list \\
-CONFIG.NUM_MI { {ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb + 1} } \\
+CONFIG.NUM_MI { {ddr2fpga_nb + fpga2ddr_nb + mem_nb + func_nb + 1} } \\
  ] $processing_system7_0_axi_periph
 
   # Create instance: rst_processing_system7_0_50M, and set properties
@@ -1274,7 +1253,7 @@ CONFIG.NUM_MI { {ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb + 1} } \\
   # Create instance: xlconcat_0, and set properties
   set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0 ]
   set_property -dict [ list \\
-CONFIG.NUM_PORTS { {ddr2fpga_nb + fpga2ddr_nb + iter_nb} } \\
+CONFIG.NUM_PORTS { {ddr2fpga_nb + fpga2ddr_nb + func_nb} } \\
  ] $xlconcat_0
 
   # Create interface connections
@@ -1282,18 +1261,40 @@ CONFIG.NUM_PORTS { {ddr2fpga_nb + fpga2ddr_nb + iter_nb} } \\
 
 for i in range(ddr2fpga_nb):
     design_tcl += f'''\
-  connect_bd_intf_net -intf_net axi_dma_ddr2fpga_{i}_M_AXIS_MM2S [get_bd_intf_pins axi_dma_ddr2fpga_{i}/M_AXIS_MM2S] [get_bd_intf_pins ddr2fpga_{i}/i_stream]
-  connect_bd_intf_net -intf_net axi_dma_ddr2fpga_{i}_M_AXI_MM2S [get_bd_intf_pins axi_dma_ddr2fpga_{i}/M_AXI_MM2S] [get_bd_intf_pins axi_mem_intercon/S{str(i).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net s_dma2mem_{i} [get_bd_intf_pins axi_dma_ddr2fpga_{i}/M_AXIS_MM2S] [get_bd_intf_pins axis_dma2mem_intercon/S{str(i).zfill(2)}_AXIS]
+  connect_bd_intf_net -intf_net s_ddr2dma_{i} [get_bd_intf_pins axi_dma_ddr2fpga_{i}/M_AXI_MM2S] [get_bd_intf_pins axi_dma2ddr_intercon/S{str(i).zfill(2)}_AXI]
 '''
 
 for i in range(fpga2ddr_nb):
     design_tcl += f'''\
-  connect_bd_intf_net -intf_net axi_dma_fpga2ddr_{i}_M_AXI_S2MM [get_bd_intf_pins axi_dma_fpga2ddr_{i}/M_AXI_S2MM] [get_bd_intf_pins axi_mem_intercon/S{str(i + ddr2fpga_nb).zfill(2)}_AXI]
-  connect_bd_intf_net -intf_net fpga2ddr_{i}_o_stream [get_bd_intf_pins axi_dma_fpga2ddr_{i}/S_AXIS_S2MM] [get_bd_intf_pins fpga2ddr_{i}/o_stream]
+  connect_bd_intf_net -intf_net s_dma2ddr_{i} [get_bd_intf_pins axi_dma_fpga2ddr_{i}/M_AXI_S2MM] [get_bd_intf_pins axi_dma2ddr_intercon/S{str(i + ddr2fpga_nb).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net s_mem2dma_{i} [get_bd_intf_pins axi_dma_fpga2ddr_{i}/S_AXIS_S2MM] [get_bd_intf_pins axis_dma2mem_intercon/M{str(i).zfill(2)}_AXIS]
+'''
+
+for i in range(mem_nb):
+    design_tcl += f'''\
+  connect_bd_intf_net -intf_net s_dma2mem2_{i} [get_bd_intf_pins axis_dma2mem_intercon/M{str(i + fpga2ddr_nb).zfill(2)}_AXIS] [get_bd_intf_pins memory_{i}/i_ddr2fpga]
+  connect_bd_intf_net -intf_net s_mem2dma2_{i} [get_bd_intf_pins axis_dma2mem_intercon/S{str(i + ddr2fpga_nb).zfill(2)}_AXIS] [get_bd_intf_pins memory_{i}/o_fpga2ddr]
+  connect_bd_intf_net -intf_net s_func2mem_{i} [get_bd_intf_pins axis_mem2func_intercon/M{str(i).zfill(2)}_AXIS] [get_bd_intf_pins memory_{i}/i_func2mem]
+  connect_bd_intf_net -intf_net s_mem2func_{i} [get_bd_intf_pins axis_mem2func_intercon/S{str(i).zfill(2)}_AXIS] [get_bd_intf_pins memory_{i}/o_mem2func]
+'''
+
+for i in range(add_nb):
+    design_tcl += f'''\
+  connect_bd_intf_net -intf_net s_mem2add0_{i} [get_bd_intf_pins add_{i}/i_arg0] [get_bd_intf_pins axis_mem2func_intercon/M{str(mem_nb + 2 * i).zfill(2)}_AXIS]
+  connect_bd_intf_net -intf_net s_mem2add1_{i} [get_bd_intf_pins add_{i}/i_arg1] [get_bd_intf_pins axis_mem2func_intercon/M{str(mem_nb + 2 * i + 1).zfill(2)}_AXIS]
+  connect_bd_intf_net -intf_net s_add2mem_{i} [get_bd_intf_pins add_{i}/o_res] [get_bd_intf_pins axis_mem2func_intercon/S{str(mem_nb + i).zfill(2)}_AXIS]
+'''
+
+for i in range(mul_nb):
+    design_tcl += f'''\
+  connect_bd_intf_net -intf_net s_mem2mul0_{i} [get_bd_intf_pins mul_{i}/i_arg0] [get_bd_intf_pins axis_mem2func_intercon/M{str(mem_nb + 2 * add_nb + 2 * i).zfill(2)}_AXIS]
+  connect_bd_intf_net -intf_net s_mem2mul1_{i} [get_bd_intf_pins mul_{i}/i_arg1] [get_bd_intf_pins axis_mem2func_intercon/M{str(mem_nb + 2 * add_nb + 2 * i + 1).zfill(2)}_AXIS]
+  connect_bd_intf_net -intf_net s_mul2mem_{i} [get_bd_intf_pins mul_{i}/o_res] [get_bd_intf_pins axis_mem2func_intercon/S{str(mem_nb + add_nb + i).zfill(2)}_AXIS]
 '''
 
 design_tcl += '''\
-  connect_bd_intf_net -intf_net axi_mem_intercon_M00_AXI [get_bd_intf_pins axi_mem_intercon/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP0]
+  connect_bd_intf_net -intf_net axi_dma2ddr_intercon_M00_AXI [get_bd_intf_pins axi_dma2ddr_intercon/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP0]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
@@ -1309,23 +1310,23 @@ for i in range(fpga2ddr_nb):
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb).zfill(2)}_AXI [get_bd_intf_pins axi_dma_fpga2ddr_{i}/S_AXI_LITE] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb).zfill(2)}_AXI]
 '''
 
-for i in range(ddr2fpga_nb):
+for i in range(mem_nb):
     design_tcl += f'''\
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb + fpga2ddr_nb).zfill(2)}_AXI [get_bd_intf_pins ddr2fpga_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb + fpga2ddr_nb).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb + fpga2ddr_nb).zfill(2)}_AXI [get_bd_intf_pins memory_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb + fpga2ddr_nb).zfill(2)}_AXI]
 '''
 
-for i in range(fpga2ddr_nb):
+for i in range(add_nb):
     design_tcl += f'''\
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb * 2 + fpga2ddr_nb).zfill(2)}_AXI [get_bd_intf_pins fpga2ddr_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb * 2 + fpga2ddr_nb).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb + fpga2ddr_nb + mem_nb).zfill(2)}_AXI [get_bd_intf_pins add_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb + fpga2ddr_nb + mem_nb).zfill(2)}_AXI]
 '''
 
-for i in range(iter_nb):
+for i in range(mul_nb):
     design_tcl += f'''\
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb * 2 + fpga2ddr_nb * 2).zfill(2)}_AXI [get_bd_intf_pins iterator_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb * 2 + fpga2ddr_nb * 2).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb + fpga2ddr_nb + mem_nb + add_nb).zfill(2)}_AXI [get_bd_intf_pins mul_{i}/s_axi_ctrl] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(i + ddr2fpga_nb + fpga2ddr_nb + mem_nb + add_nb).zfill(2)}_AXI]
 '''
 
 design_tcl += f'''\
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb).zfill(2)}_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb).zfill(2)}_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M{str(i + ddr2fpga_nb + fpga2ddr_nb + mem_nb + func_nb).zfill(2)}_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins processing_system7_0_axi_periph/M{str(ddr2fpga_nb + fpga2ddr_nb + mem_nb + func_nb).zfill(2)}_AXI]
 '''
 
 design_tcl += '''\
@@ -1333,82 +1334,37 @@ design_tcl += '''\
   # Create port connections
   connect_bd_net -net axi_intc_0_irq [get_bd_pins axi_intc_0/irq] [get_bd_pins processing_system7_0/IRQ_F2P]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_50M/ext_reset_in]
-  connect_bd_net -net rst_processing_system7_0_50M_interconnect_aresetn [get_bd_pins axi_mem_intercon/ARESETN] [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_50M/interconnect_aresetn]
+  connect_bd_net -net rst_processing_system7_0_50M_interconnect_aresetn [get_bd_pins axi_dma2ddr_intercon/ARESETN] [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_50M/interconnect_aresetn]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins axi_intc_0/intr] [get_bd_pins xlconcat_0/dout]
 '''
 
 for i in range(ddr2fpga_nb):
     design_tcl += f'''\
   connect_bd_net -net axi_dma_ddr2fpga_{i}_mm2s_introut [get_bd_pins axi_dma_ddr2fpga_{i}/mm2s_introut] [get_bd_pins xlconcat_0/In{i}]
-  connect_bd_net -net s_ddr2fpga_mem_i{i} [get_bd_pins ddr2fpga_{i}/o_mem_i_V] [get_bd_pins crossbar_0/i_ddr2fpga_mem_i{i}_V]
-  connect_bd_net -net s_ddr2fpga_addr{i} [get_bd_pins ddr2fpga_{i}/mem_V_address0] [get_bd_pins crossbar_0/i_ddr2fpga_addr{i}_V]
-  connect_bd_net -net s_ddr2fpga_cena{i} [get_bd_pins ddr2fpga_{i}/mem_V_ce0] [get_bd_pins crossbar_0/i_ddr2fpga_cena{i}_V]
-  connect_bd_net -net s_ddr2fpga_din{i} [get_bd_pins ddr2fpga_{i}/mem_V_d0] [get_bd_pins crossbar_0/i_ddr2fpga_mem_din{i}_V]
-  connect_bd_net -net s_ddr2fpga_wena{i} [get_bd_pins ddr2fpga_{i}/mem_V_we0] [get_bd_pins crossbar_0/i_ddr2fpga_wena{i}_V]
 '''
 
 for i in range(fpga2ddr_nb):
     design_tcl += f'''\
   connect_bd_net -net axi_dma_fpga2ddr_{i}_s2mm_introut [get_bd_pins axi_dma_fpga2ddr_{i}/s2mm_introut] [get_bd_pins xlconcat_0/In{i + ddr2fpga_nb}]
-  connect_bd_net -net s_fpga2ddr_mem_i{i} [get_bd_pins fpga2ddr_{i}/o_mem_i_V] [get_bd_pins crossbar_0/i_fpga2ddr_mem_i{i}_V]
-  connect_bd_net -net s_fpga2ddr_addr{i} [get_bd_pins fpga2ddr_{i}/mem_V_address0] [get_bd_pins crossbar_0/i_fpga2ddr_addr{i}_V]
-  connect_bd_net -net s_fpga2ddr_cena{i} [get_bd_pins fpga2ddr_{i}/mem_V_ce0] [get_bd_pins crossbar_0/i_fpga2ddr_cena{i}_V]
-  connect_bd_net -net s_fpga2ddr_dout{i} [get_bd_pins fpga2ddr_{i}/mem_V_q0] [get_bd_pins crossbar_0/o_fpga2ddr_mem_dout{i}_V]
-'''
-
-for i in range(iter_nb):
-    design_tcl += f'''\
-  connect_bd_net -net iterator_{i}_interrupt [get_bd_pins iterator_{i}/interrupt] [get_bd_pins xlconcat_0/In{i + ddr2fpga_nb + fpga2ddr_nb}]
-  connect_bd_net -net s_iter_raddr{i} [get_bd_pins iterator_{i}/o_raddr_V] [get_bd_pins crossbar_0/i_iter_raddr{i}_V]
-  connect_bd_net -net s_iter_waddr{i} [get_bd_pins iterator_{i}/o_waddr_V] [get_bd_pins crossbar_0/i_iter_waddr{i}_V]
-  connect_bd_net -net s_iter_wena{i} [get_bd_pins iterator_{i}/o_wena_V] [get_bd_pins crossbar_0/i_iter_wena{i}_V]
-  connect_bd_net -net s_iter_cena{i} [get_bd_pins iterator_{i}/o_cena_V] [get_bd_pins crossbar_0/i_iter_cena{i}_V]
-  connect_bd_net -net s_iter_arg_valid{i} [get_bd_pins iterator_{i}/o_arg_valid_V] [get_bd_pins crossbar_0/i_iter_arg_valid{i}_V]
-  connect_bd_net -net s_iter_res_valid{i} [get_bd_pins iterator_{i}/i_res_valid_V] [get_bd_pins crossbar_0/o_iter_res_valid{i}_V]
-  connect_bd_net -net s_iter_func_i{i} [get_bd_pins iterator_{i}/o_func_i_V] [get_bd_pins crossbar_0/i_iter_func_i{i}_V]
-  connect_bd_net -net s_iter_rmem0_i{i} [get_bd_pins iterator_{i}/o_rmem0_i_V] [get_bd_pins crossbar_0/i_iter_rmem0_i{i}_V]
-  connect_bd_net -net s_iter_rmem1_i{i} [get_bd_pins iterator_{i}/o_rmem1_i_V] [get_bd_pins crossbar_0/i_iter_rmem1_i{i}_V]
-  connect_bd_net -net s_iter_wmem_i{i} [get_bd_pins iterator_{i}/o_wmem_i_V] [get_bd_pins crossbar_0/i_iter_wmem_i{i}_V]
-  connect_bd_net -net s_iter_data_nb{i} [get_bd_pins iterator_{i}/o_data_nb_V] [get_bd_pins crossbar_0/i_iter_data_nb{i}_V]
-'''
-
-for i in range(mem_nb):
-    design_tcl += f'''\
-  connect_bd_net -net s_mem_addr{i} [get_bd_pins memory_{i}/i_addr_V] [get_bd_pins crossbar_0/o_mem_addr{i}_V]
-  connect_bd_net -net s_mem_cena{i} [get_bd_pins memory_{i}/i_cena_V] [get_bd_pins crossbar_0/o_mem_cena{i}_V]
-  connect_bd_net -net s_mem_wena{i} [get_bd_pins memory_{i}/i_wena_V] [get_bd_pins crossbar_0/o_mem_wena{i}_V]
-  connect_bd_net -net s_mem_din{i} [get_bd_pins memory_{i}/i_din_V] [get_bd_pins crossbar_0/o_mem_din{i}_V]
-  connect_bd_net -net s_mem_dout{i} [get_bd_pins memory_{i}/o_dout_V] [get_bd_pins crossbar_0/i_mem_dout{i}_V]
 '''
 
 for i in range(add_nb):
     design_tcl += f'''\
-  connect_bd_net -net s_func_arg0{i} [get_bd_pins add_{i}/i_arg0_V] [get_bd_pins crossbar_0/o_func_arg0{i}_V]
-  connect_bd_net -net s_func_arg1{i} [get_bd_pins add_{i}/i_arg1_V] [get_bd_pins crossbar_0/o_func_arg1{i}_V]
-  connect_bd_net -net s_func_arg_valid{i} [get_bd_pins add_{i}/i_arg_valid_V] [get_bd_pins crossbar_0/o_func_arg_valid{i}_V]
-  connect_bd_net -net s_func_res{i} [get_bd_pins add_{i}/o_res_V] [get_bd_pins crossbar_0/i_func_res{i}_V]
-  connect_bd_net -net s_func_res_valid{i} [get_bd_pins add_{i}/o_res_valid_V] [get_bd_pins crossbar_0/i_func_res_valid{i}_V]
+  connect_bd_net -net add_{i}_interrupt [get_bd_pins add_{i}/interrupt] [get_bd_pins xlconcat_0/In{i + ddr2fpga_nb + fpga2ddr_nb}]
 '''
 
 for i in range(mul_nb):
     design_tcl += f'''\
-  connect_bd_net -net s_func_arg0{i + add_nb}       [get_bd_pins mul_{i}/i_arg0_V]      [get_bd_pins crossbar_0/o_func_arg0{i + add_nb}_V]
-  connect_bd_net -net s_func_arg1{i + add_nb}       [get_bd_pins mul_{i}/i_arg1_V]      [get_bd_pins crossbar_0/o_func_arg1{i + add_nb}_V]
-  connect_bd_net -net s_func_arg_valid{i + add_nb}  [get_bd_pins mul_{i}/i_arg_valid_V] [get_bd_pins crossbar_0/o_func_arg_valid{i + add_nb}_V]
-  connect_bd_net -net s_func_res{i + add_nb}        [get_bd_pins mul_{i}/o_res_V]       [get_bd_pins crossbar_0/i_func_res{i + add_nb}_V]
-  connect_bd_net -net s_func_res_valid{i + add_nb}  [get_bd_pins mul_{i}/o_res_valid_V] [get_bd_pins crossbar_0/i_func_res_valid{i + add_nb}_V]
+  connect_bd_net -net mul_{i}_interrupt [get_bd_pins mul_{i}/interrupt] [get_bd_pins xlconcat_0/In{i + ddr2fpga_nb + fpga2ddr_nb + add_nb}]
 '''
 
 design_tcl += '  connect_bd_net -net processing_system7_0_FCLK_CLK0 '
 
 for i in range(ddr2fpga_nb):
-    design_tcl += f'[get_bd_pins axi_dma_ddr2fpga_{i}/m_axi_mm2s_aclk] [get_bd_pins axi_dma_ddr2fpga_{i}/s_axi_lite_aclk] [get_bd_pins ddr2fpga_{i}/ap_clk] '
+    design_tcl += f'[get_bd_pins axi_dma_ddr2fpga_{i}/m_axi_mm2s_aclk] [get_bd_pins axi_dma_ddr2fpga_{i}/s_axi_lite_aclk] '
 
 for i in range(fpga2ddr_nb):
-    design_tcl += f'[get_bd_pins axi_dma_fpga2ddr_{i}/m_axi_s2mm_aclk] [get_bd_pins axi_dma_fpga2ddr_{i}/s_axi_lite_aclk] [get_bd_pins fpga2ddr_{i}/ap_clk] '
-
-for i in range(iter_nb):
-    design_tcl += f'[get_bd_pins iterator_{i}/ap_clk] '
+    design_tcl += f'[get_bd_pins axi_dma_fpga2ddr_{i}/m_axi_s2mm_aclk] [get_bd_pins axi_dma_fpga2ddr_{i}/s_axi_lite_aclk] '
 
 for i in range(mem_nb):
     design_tcl += f'[get_bd_pins memory_{i}/ap_clk] '
@@ -1420,44 +1376,70 @@ for i in range(mul_nb):
     design_tcl += f'[get_bd_pins mul_{i}/ap_clk] '
 
 for i in range(ddr2fpga_nb + fpga2ddr_nb):
-    design_tcl += f'[get_bd_pins axi_mem_intercon/S{str(i).zfill(2)}_ACLK] '
+    design_tcl += f'[get_bd_pins axi_dma2ddr_intercon/S{str(i).zfill(2)}_ACLK] '
 
-for i in range(ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb + 1):
+for i in range(mem_nb + func_nb):
+    design_tcl += f'[get_bd_pins axis_mem2func_intercon/S{str(i).zfill(2)}_AXIS_ACLK] '
+
+for i in range(mem_nb + 2 * func_nb):
+    design_tcl += f'[get_bd_pins axis_mem2func_intercon/M{str(i).zfill(2)}_AXIS_ACLK] '
+
+for i in range(mem_nb + ddr2fpga_nb):
+    design_tcl += f'[get_bd_pins axis_dma2mem_intercon/S{str(i).zfill(2)}_AXIS_ACLK] '
+
+for i in range(mem_nb + fpga2ddr_nb):
+    design_tcl += f'[get_bd_pins axis_dma2mem_intercon/M{str(i).zfill(2)}_AXIS_ACLK] '
+
+for i in range(ddr2fpga_nb + fpga2ddr_nb + mem_nb + func_nb + 1):
     design_tcl += f'[get_bd_pins processing_system7_0_axi_periph/M{str(i).zfill(2)}_ACLK] '
 
-design_tcl += '[get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_mem_intercon/ACLK] [get_bd_pins axi_mem_intercon/M00_ACLK] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]\n'
+design_tcl += '[get_bd_pins axi_intc_0/s_axi_aclk] [get_bd_pins axi_dma2ddr_intercon/ACLK] [get_bd_pins axis_dma2mem_intercon/ACLK] [get_bd_pins axis_mem2func_intercon/ACLK] [get_bd_pins axi_dma2ddr_intercon/M00_ACLK] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]\n'
     
 design_tcl += '  connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn '
 
 for i in range(ddr2fpga_nb):
-    design_tcl += f'[get_bd_pins axi_dma_ddr2fpga_{i}/axi_resetn] [get_bd_pins ddr2fpga_{i}/ap_rst_n] '
+    design_tcl += f'[get_bd_pins axi_dma_ddr2fpga_{i}/axi_resetn] '
 
 for i in range(fpga2ddr_nb):
-    design_tcl += f'[get_bd_pins axi_dma_fpga2ddr_{i}/axi_resetn] [get_bd_pins fpga2ddr_{i}/ap_rst_n] '
-
-for i in range(iter_nb):
-    design_tcl += f'[get_bd_pins iterator_{i}/ap_rst_n] '
-
-for i in range(ddr2fpga_nb + fpga2ddr_nb):
-    design_tcl += f'[get_bd_pins axi_mem_intercon/S{str(i).zfill(2)}_ARESETN] '
-
-for i in range(ddr2fpga_nb * 2 + fpga2ddr_nb * 2 + iter_nb + 1):
-    design_tcl += f'[get_bd_pins processing_system7_0_axi_periph/M{str(i).zfill(2)}_ARESETN] '
-    
-design_tcl += '[get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_mem_intercon/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]\n'
-
-design_tcl += '  connect_bd_net -net rst_processing_system7_0_50M_peripheral_reset '
+    design_tcl += f'[get_bd_pins axi_dma_fpga2ddr_{i}/axi_resetn] '
 
 for i in range(mem_nb):
-    design_tcl += f'[get_bd_pins memory_{i}/ap_rst] '
+    design_tcl += f'[get_bd_pins memory_{i}/ap_rst_n] '
 
 for i in range(add_nb):
-    design_tcl += f'[get_bd_pins add_{i}/ap_rst] '
+    design_tcl += f'[get_bd_pins add_{i}/ap_rst_n] '
 
 for i in range(mul_nb):
-    design_tcl += f'[get_bd_pins mul_{i}/ap_rst] '
+    design_tcl += f'[get_bd_pins mul_{i}/ap_rst_n] '
 
-design_tcl += '[get_bd_pins rst_processing_system7_0_50M/peripheral_reset]\n'
+for i in range(ddr2fpga_nb + fpga2ddr_nb):
+    design_tcl += f'[get_bd_pins axi_dma2ddr_intercon/S{str(i).zfill(2)}_ARESETN] '
+
+for i in range(mem_nb + func_nb):
+    design_tcl += f'[get_bd_pins axis_mem2func_intercon/S{str(i).zfill(2)}_AXIS_ARESETN] '
+
+for i in range(mem_nb + 2 * func_nb):
+    design_tcl += f'[get_bd_pins axis_mem2func_intercon/M{str(i).zfill(2)}_AXIS_ARESETN] '
+
+for i in range(mem_nb + ddr2fpga_nb):
+    design_tcl += f'[get_bd_pins axis_dma2mem_intercon/S{str(i).zfill(2)}_AXIS_ARESETN] '
+
+for i in range(mem_nb + fpga2ddr_nb):
+    design_tcl += f'[get_bd_pins axis_dma2mem_intercon/M{str(i).zfill(2)}_AXIS_ARESETN] '
+
+for i in range(ddr2fpga_nb + fpga2ddr_nb + mem_nb + func_nb + 1):
+    design_tcl += f'[get_bd_pins processing_system7_0_axi_periph/M{str(i).zfill(2)}_ARESETN] '
+    
+for i in range(mem_nb):
+    design_tcl += f'[get_bd_pins memory_{i}/ap_rst_n] '
+
+for i in range(add_nb):
+    design_tcl += f'[get_bd_pins add_{i}/ap_rst_n] '
+
+for i in range(mul_nb):
+    design_tcl += f'[get_bd_pins mul_{i}/ap_rst_n] '
+
+design_tcl += '[get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_dma2ddr_intercon/M00_ARESETN] [get_bd_pins axis_dma2mem_intercon/ARESETN] [get_bd_pins axis_mem2func_intercon/ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]\n'
 
 design_tcl += '''
 
@@ -1469,19 +1451,27 @@ for i in range(ddr2fpga_nb):
     design_tcl += f'''\
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_ddr2fpga_{i}/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x00010000 -offset {hex(0x40400000 + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_ddr2fpga_{i}/S_AXI_LITE/Reg] SEG_axi_dma_ddr2fpga_{i}_Reg
-  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs ddr2fpga_{i}/s_axi_ctrl/Reg] SEG_ddr2fpga_{i}_Reg
 '''
 
 for i in range(fpga2ddr_nb):
     design_tcl += f'''\
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_fpga2ddr_{i}/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x00010000 -offset {hex(0x40400000 + 0x10000 * ddr2fpga_nb + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_fpga2ddr_{i}/S_AXI_LITE/Reg] SEG_axi_dma_fpga2ddr_{i}_Reg
-  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * ddr2fpga_nb + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs fpga2ddr_{i}/s_axi_ctrl/Reg] SEG_fpga2ddr_{i}_Reg
 '''
 
-for i in range(iter_nb):
+for i in range(mem_nb):
     design_tcl += f'''\
-  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * (ddr2fpga_nb + fpga2ddr_nb) + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs iterator_{i}/s_axi_ctrl/Reg] SEG_iterator_{i}_Reg
+  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * (ddr2fpga_nb + fpga2ddr_nb) + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs memory_{i}/s_axi_ctrl/Reg] SEG_memory_{i}_Reg
+'''
+
+for i in range(add_nb):
+    design_tcl += f'''\
+  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * (ddr2fpga_nb + fpga2ddr_nb + mem_nb) + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs add_{i}/s_axi_ctrl/Reg] SEG_add_{i}_Reg
+'''
+
+for i in range(mul_nb):
+    design_tcl += f'''\
+  create_bd_addr_seg -range 0x00010000 -offset {hex(0x43C00000 + 0x10000 * (ddr2fpga_nb + fpga2ddr_nb + mem_nb + add_nb) + 0x10000 * i)} [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs mul_{i}/s_axi_ctrl/Reg] SEG_mul_{i}_Reg
 '''
 
 design_tcl += '''
@@ -1499,18 +1489,14 @@ design_tcl += '''
 
 set_property target_language VHDL [current_project]
 set_property ip_repo_paths { \
-        /home/david/git/davidbrochart/bundle/vivado/ddr2fpga/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/fpga2ddr/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/iterator/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/memory/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/add/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/mul/solution1 \
-        /home/david/git/davidbrochart/bundle/vivado/crossbar/solution1 \
+        /home/david/git/davidbrochart/bundle/vivado/ip/memory/solution1 \
+        /home/david/git/davidbrochart/bundle/vivado/ip/add/solution1 \
+        /home/david/git/davidbrochart/bundle/vivado/ip/mul/solution1 \
         } [current_project]
 update_ip_catalog -rebuild
 create_root_design ""
 
-make_wrapper -files [get_files myproj/project_1.srcs/sources_1/bd/design_1/design_1.bd] -top
+make_wrapper -files [get_files bundle/project_1.srcs/sources_1/bd/design_1/design_1.bd] -top
 set_property top design_1 [current_fileset]
 launch_runs synth_1 -jobs 2
 wait_on_run synth_1
