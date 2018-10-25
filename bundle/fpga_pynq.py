@@ -25,7 +25,7 @@ class PYNQ(object):
         self.state = FPGA_state(fpga_config)
         self.config = fpga_config.config
 
-    def op(self, iter_i, func_i, rmem0_i, rmem1_i, wmem_i, data_nb):
+    async def op(self, iter_i, func_i, rmem0_i, rmem1_i, wmem_i, data_nb):
         # operation request
         # memory for arg0
         self.u_mem[rmem0_i].write(0x10, 2) # mode
@@ -45,13 +45,11 @@ class PYNQ(object):
         self.u_func[func_i].write(0x10, data_nb)
         self.u_func[func_i].write(0x18, wmem_i) # TDEST
         self.u_func[func_i].write(0x00, 1) # ap_start
-
-    async def done(self, func_i):
         # operation completion check
         await self.u_func[func_i].interrupt.wait()
         self.u_func[func_i].write(0x0C, 1) # clear interrupt
 
-    def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
+    async def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
         # memory write
         self.u_mem[mem_i].write(0x10, 0) # mode
         self.u_mem[mem_i].write(0x18, data_nb)
@@ -64,12 +62,10 @@ class PYNQ(object):
         array_ptr.physical_address = ptr
         array_ptr.cacheable = 0
         self.u_axi_dma_ddr2fpga[ddr2fpga_i].sendchannel.transfer(array_ptr)
-
-    async def ddr2fpga_done(self, ddr2fpga_i):
         # memory copy completion check
         await self.u_axi_dma_ddr2fpga[ddr2fpga_i].sendchannel.wait_async()
 
-    def fpga2ddr(self, fpga2ddr_i, mem_i, array_ptr, data_nb):
+    async def fpga2ddr(self, fpga2ddr_i, mem_i, array_ptr, data_nb):
         # memory read
         ptr = array_ptr.physical_address
         array_ptr = array_ptr[:data_nb]
@@ -80,7 +76,5 @@ class PYNQ(object):
         self.u_mem[mem_i].write(0x18, data_nb)
         self.u_mem[mem_i].write(0x20, fpga2ddr_i)
         self.u_mem[mem_i].write(0x00, 1) # ap_start
-
-    async def fpga2ddr_done(self, fpga2ddr_i):
         # memory copy completion check
         await self.u_axi_dma_fpga2ddr[fpga2ddr_i].recvchannel.wait_async()

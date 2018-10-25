@@ -12,7 +12,6 @@
 import math
 import random
 import numpy as np
-from .async_func import binary_func
 
 TNUMBER = 0
 TOP1 = 1
@@ -104,8 +103,8 @@ class Expression():
         ret = Expression(newexpression, self.ops1, self.ops2, self.functions)
         return ret
 
-    def evaluate(self, values={}, toFpga=False):
-        if toFpga:
+    def evaluate(self, values={}, to_device=False):
+        if to_device:
             tasks = []
             var = self.variables()
             values = {v:i for i,v in enumerate(var)}
@@ -122,12 +121,12 @@ class Expression():
                 n2 = nstack.pop()
                 n1 = nstack.pop()
                 f = self.ops2[item.index_]
-                if toFpga:
+                if to_device:
                     tasks.append(f(n1, n2, n3))
                     nstack.append(n3)
                     n3 += 1
                 else:
-                    nstack.append(f(n1, n2, fpga=False))
+                    nstack.append(f(n1, n2, device=False))
             elif type_ == TVAR:
                 if item.index_ in values:
                     nstack.append(values[item.index_])
@@ -138,12 +137,12 @@ class Expression():
             elif type_ == TOP1:
                 n1 = nstack.pop()
                 f = self.ops1[item.index_]
-                if toFpga:
-                    tasks.append(f(n1))
+                if to_device:
+                    tasks.append(f(n1, n3))
                     nstack.append(n3)
                     n3 += 1
                 else:
-                    nstack.append(f(n1), fpga=False)
+                    nstack.append(f(n1), device=False)
             elif type_ == TFUNCALL:
                 n1 = nstack.pop()
                 f = nstack.pop()
@@ -158,7 +157,7 @@ class Expression():
                 raise Exception('invalid Expression')
         if len(nstack) > 1:
             raise Exception('invalid Expression (parity)')
-        if toFpga:
+        if to_device:
             return tasks
         else:
             return nstack[0]
@@ -242,18 +241,30 @@ class Parser:
     CALL         = 128
     NULLARY_CALL = 256
 
-    def add(self, a, b, c=None, fpga=True):
-        if fpga:
-            return (binary_func, 'add', a, b, c)
+    def sin(self, a, c=None, device=True):
+        if device:
+            return ('unary_func', 'sin', a, c)
+        else:
+            return np.sin(a)
+
+    def cos(self, a, c=None, device=True):
+        if device:
+            return ('unary_func', 'cos', a, c)
+        else:
+            return np.cos(a)
+
+    def add(self, a, b, c=None, device=True):
+        if device:
+            return ('binary_func', 'add', a, b, c)
         else:
             return np.add(a, b)
 
     def sub(self, a, b):
         return a - b
 
-    def mul(self, a, b, c=None, fpga=True):
-        if fpga:
-            return (binary_func, 'mul', a, b, c)
+    def mul(self, a, b, c=None, device=True):
+        if device:
+            return ('binary_func', 'mul', a, b, c)
         else:
             return np.multiply(a, b)
 
@@ -327,8 +338,8 @@ class Parser:
         self.tmpprio = 0
 
         self.ops1 = {
-            'sin': math.sin,
-            'cos': math.cos,
+            'sin': self.sin,
+            'cos': self.cos,
             'tan': math.tan,
             'asin': math.asin,
             'acos': math.acos,

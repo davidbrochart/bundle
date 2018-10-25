@@ -4,7 +4,7 @@ import config
 
 mem_nb      = 16
 mem_width   = 64
-mem_depth   = 16384
+mem_depth   = 4096
 ddr2fpga_nb = 4
 fpga2ddr_nb = 2
 add_nb      = 4

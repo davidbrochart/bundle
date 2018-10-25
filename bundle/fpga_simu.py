@@ -7,8 +7,11 @@ from .iterator import iterator
 from .functions import func
 from .fpga_state import FPGA_state
 
-class FPGA(Module):
+from random import randint
+import asyncio
+import numpy as np
 
+class Simu(Module):
     def __init__(self, fpga_config):
         self.func_layout = fpga_config.func_layout
         self.mem_nb = fpga_config.config['mem_nb']
@@ -19,6 +22,7 @@ class FPGA(Module):
         self.mem_depth = fpga_config.config['mem_depth']
 
         self.chunk_array = [[0 for j in range(fpga_config.config['mem_depth'])] for i in range(fpga_config.config['mem_nb'])]
+        #self.chunk_array = [np.zeros(fpga_config.config['mem_depth'], dtype=np.uint64) for i in range(fpga_config.config['mem_nb'])]
 
         self.cycle_nb = -1
         self.randmax = 2
@@ -161,12 +165,12 @@ class FPGA(Module):
             self.s_mem_din[i].d  = 0
             self.s_mem_wena[i].d = 0
         for i in range(self.fpga2ddr_nb):
-            self.s_mem_addr[self.s_fpga2ddr_mem_i[i].d].d       |= self.s_fpga2ddr_addr[i].d
+            self.s_mem_addr[self.s_fpga2ddr_mem_i[i].d].d       += self.s_fpga2ddr_addr[i].d
             self.s_fpga2ddr_mem_dout[i].d                        = self.s_mem_dout[self.s_fpga2ddr_mem_i[i].d].d
         for i in range(self.ddr2fpga_nb):
-            self.s_mem_wena[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_wena[i].d
-            self.s_mem_addr[self.s_ddr2fpga_mem_i[i].d].d       |= self.s_ddr2fpga_addr[i].d
-            self.s_mem_din[self.s_ddr2fpga_mem_i[i].d].d        |= self.s_ddr2fpga_din[i].d
+            self.s_mem_wena[self.s_ddr2fpga_mem_i[i].d].d       += self.s_ddr2fpga_wena[i].d
+            self.s_mem_addr[self.s_ddr2fpga_mem_i[i].d].d       += self.s_ddr2fpga_addr[i].d
+            self.s_mem_din[self.s_ddr2fpga_mem_i[i].d].d        += self.s_ddr2fpga_din[i].d
 
         # memory <-> iterator <-> function
         for i in range(self.func_nb):
@@ -174,20 +178,88 @@ class FPGA(Module):
             self.s_func_arg0[i].d = 0
             self.s_func_arg1[i].d = 0
         for i in range(self.iter_nb):
-            self.s_mem_addr[self.s_iter_rmem0_i[i].d].d         |= self.s_iter_raddr[i].d
-            self.s_mem_addr[self.s_iter_rmem1_i[i].d].d         |= self.s_iter_raddr[i].d
-            self.s_mem_addr[self.s_iter_wmem_i[i].d].d          |= self.s_iter_waddr[i].d
-            self.s_mem_wena[self.s_iter_wmem_i[i].d].d          |= self.s_iter_wena[i].d
-            self.s_func_arg_valid[self.s_iter_func_i[i].d].d    |= self.s_iter_arg_valid[i].d
+            self.s_mem_addr[self.s_iter_rmem0_i[i].d].d         += self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_rmem1_i[i].d].d         += self.s_iter_raddr[i].d
+            self.s_mem_addr[self.s_iter_wmem_i[i].d].d          += self.s_iter_waddr[i].d
+            self.s_mem_wena[self.s_iter_wmem_i[i].d].d          += self.s_iter_wena[i].d
+            self.s_func_arg_valid[self.s_iter_func_i[i].d].d    += self.s_iter_arg_valid[i].d
             self.s_iter_res_valid[i].d                           = self.s_func_res_valid[self.s_iter_func_i[i].d].d
             if self.s_iter_data_nb[i].d != 0:
-                self.s_mem_din[self.s_iter_wmem_i[i].d].d       |= self.s_func_res[self.s_iter_func_i[i].d].d
+                self.s_mem_din[self.s_iter_wmem_i[i].d].d       += self.s_func_res[self.s_iter_func_i[i].d].d
             if self.s_iter_arg_valid[i].d == 1:
-                self.s_func_arg0[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
-                self.s_func_arg1[self.s_iter_func_i[i].d].d     |= self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
+                self.s_func_arg0[self.s_iter_func_i[i].d].d     += self.s_mem_dout[self.s_iter_rmem0_i[i].d].d
+                self.s_func_arg1[self.s_iter_func_i[i].d].d     += self.s_mem_dout[self.s_iter_rmem1_i[i].d].d
 
     def set_cycle_nb(self, cycle_nb=-1):
         self.cycle_nb = cycle_nb
 
     def set_trace(self, trace):
         self.trace = trace
+
+    async def op(self, iter_i, func_i, rmem0_i, rmem1_i, wmem_i, data_nb):
+        # operation request
+        self.s_iter_data_nb[iter_i].d = data_nb
+        self.s_iter_func_i[iter_i].d = func_i
+        self.s_iter_rmem0_i[iter_i].d = rmem0_i
+        self.s_iter_rmem1_i[iter_i].d = rmem1_i
+        self.s_iter_wmem_i[iter_i].d = wmem_i
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
+        # operation completion check
+        # software is polling, run the FPGA
+        done = False
+        while not done:
+            if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+                return
+            if self.s_iter_done[iter_i].d == 1:
+                self.s_iter_data_nb[iter_i].d = 0
+                done = True
+            else:
+                done = False
+            clkNb = randint(1, self.randmax)
+            self.run(clkNb=clkNb, trace=self.trace)
+            await asyncio.sleep(0)
+
+    async def ddr2fpga(self, ddr2fpga_i, mem_i, array_ptr, data_nb):
+        # memory write
+        self.s_ddr2fpga_mem_i[ddr2fpga_i].d = mem_i
+        self.s_ddr2fpga_data_nb[ddr2fpga_i].d = data_nb
+        self.u_ddr2fpga[ddr2fpga_i].array_ptr = array_ptr
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
+        # memory copy completion check
+        # software is polling, run the FPGA
+        done = False
+        while not done:
+            if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+                return
+            if self.s_ddr2fpga_done[ddr2fpga_i].d == 1:
+                self.s_ddr2fpga_data_nb[ddr2fpga_i].d = 0
+                done = True
+            else:
+                done = False
+            clkNb = randint(1, self.randmax)
+            self.run(clkNb=clkNb, trace=self.trace)
+            await asyncio.sleep(0)
+
+    async def fpga2ddr(self, fpga2ddr_i, mem_i, array_ptr, data_nb):
+        # memory read
+        self.s_fpga2ddr_mem_i[fpga2ddr_i].d = mem_i
+        self.s_fpga2ddr_data_nb[fpga2ddr_i].d = data_nb
+        self.u_fpga2ddr[fpga2ddr_i].array_ptr = array_ptr
+        clkNb = randint(1, self.randmax)
+        self.run(clkNb=clkNb, trace=self.trace)
+        # memory copy completion check
+        # software is polling, run the FPGA
+        done = False
+        while not done:
+            if (self.cycle_nb >= 0) and (self.time >= self.cycle_nb):
+                return
+            if self.s_fpga2ddr_done[fpga2ddr_i].d == 1:
+                self.s_fpga2ddr_data_nb[fpga2ddr_i].d = 0
+                done = True
+            else:
+                done = False
+            clkNb = randint(1, self.randmax)
+            self.run(clkNb=clkNb, trace=self.trace)
+            await asyncio.sleep(0)

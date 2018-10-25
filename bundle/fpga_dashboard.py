@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 
 class Dashboard(object):
-    def __init__(self, fpga):
-        self.fpga = fpga
-        self.opnb = self.fpga.config['ddr2fpga_nb'] + self.fpga.config['iter_nb'] + self.fpga.config['add_nb'] + self.fpga.config['mul_nb'] + self.fpga.config['fpga2ddr_nb']
+    def __init__(self, config):
+        self.config = config
+        self.opnb = config['ddr2fpga_nb'] + config['iter_nb'] + config['add_nb'] + config['mul_nb'] + config['fpga2ddr_nb']
         self.prev_time = 0
         self.prev_busy = [False for i in range(self.opnb)]
         self.bar = {'t0': [], 't1': [], 'c': []}
@@ -19,28 +19,28 @@ class Dashboard(object):
         nb = 0
         if what == 'ddr2fpga':
             offset = nb
-        nb += self.fpga.config['ddr2fpga_nb']
+        nb += self.config['ddr2fpga_nb']
         if what == 'iter':
             offset = nb
-        nb += self.fpga.config['iter_nb']
+        nb += self.config['iter_nb']
         if what == 'add':
             offset = nb
-        nb += self.fpga.config['add_nb']
+        nb += self.config['add_nb']
         if what == 'mul':
             offset = nb
-            which -= self.fpga.config['add_nb']
-        nb += self.fpga.config['mul_nb']
+            which -= self.config['add_nb']
+        nb += self.config['mul_nb']
         if what == 'fpga2ddr':
             offset = nb
         self.bar['c'].append([])
         for i in range(self.opnb):
-            if i < self.fpga.config['ddr2fpga_nb']:
+            if i < self.config['ddr2fpga_nb']:
                 color = 'r'
-            elif i < self.fpga.config['ddr2fpga_nb'] + self.fpga.config['iter_nb']:
+            elif i < self.config['ddr2fpga_nb'] + self.config['iter_nb']:
                 color = 'b'
-            elif i < self.fpga.config['ddr2fpga_nb'] + self.fpga.config['iter_nb'] + self.fpga.config['add_nb']:
+            elif i < self.config['ddr2fpga_nb'] + self.config['iter_nb'] + self.config['add_nb']:
                 color = 'y'
-            elif i < self.fpga.config['ddr2fpga_nb'] + self.fpga.config['iter_nb'] + self.fpga.config['add_nb'] + self.fpga.config['add_nb']:
+            elif i < self.config['ddr2fpga_nb'] + self.config['iter_nb'] + self.config['add_nb'] + self.config['add_nb']:
                 color = 'g'
             else:
                 color = 'r'
